@@ -1,61 +1,48 @@
-//
-//  ContentView.swift
-//  BabyBuddySonnet
-//
-//  Created by Aniket Patil on 2/18/26.
-//
-
 import SwiftUI
-import SwiftData
 
 struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Environment(AppViewModel.self) private var appViewModel
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
+        Group {
+            if appViewModel.isLoading {
+                LoadingView(message: "Connecting to Baby Buddy...")
+            } else if appViewModel.isAuthenticated, let child = appViewModel.child {
+                MainTabView(child: child)
+            } else {
+                SetupView()
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
         }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
+        .task {
+            await appViewModel.checkAuth()
         }
     }
 }
 
-#Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+struct MainTabView: View {
+    let child: Child
+
+    var body: some View {
+        TabView {
+            Tab("Dashboard", systemImage: "house.fill") {
+                DashboardView(child: child)
+            }
+
+            Tab("Feeding", systemImage: "drop.fill") {
+                FeedingView(childID: child.id)
+            }
+
+            Tab("Sleep", systemImage: "moon.fill") {
+                SleepView(childID: child.id)
+            }
+
+            Tab("Diaper", systemImage: "circle.dotted") {
+                DiaperView(childID: child.id)
+            }
+
+            Tab("Pumping", systemImage: "drop.triangle.fill") {
+                PumpingView(childID: child.id)
+            }
+        }
+    }
 }
