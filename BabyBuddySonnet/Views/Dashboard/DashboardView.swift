@@ -29,7 +29,7 @@ struct DashboardView: View {
                     )
                     .padding(.horizontal)
 
-                    FeedingProgressCard(progress: viewModel.feedingProgress)
+                    FeedingProgressCard(chartData: viewModel.cumulativeChartData)
                         .padding(.horizontal)
 
                     DailySurplusCard(

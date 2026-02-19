@@ -6,6 +6,22 @@ struct SettingsView: View {
     @State private var showResetConfirmation = false
     @State private var showSignOutConfirmation = false
 
+    // MARK: - Helpers
+
+    private func timeStringToDate(_ s: String) -> Date {
+        let parts = s.split(separator: ":").compactMap { Int($0) }
+        guard parts.count == 2 else { return Date() }
+        var comps = Calendar.current.dateComponents([.year, .month, .day], from: Date())
+        comps.hour = parts[0]
+        comps.minute = parts[1]
+        return Calendar.current.date(from: comps) ?? Date()
+    }
+
+    private func dateToTimeString(_ d: Date) -> String {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: d)
+        return String(format: "%02d:%02d", c.hour ?? 0, c.minute ?? 0)
+    }
+
     var body: some View {
         Form {
             Section("Daily Feeding Goal") {
@@ -31,6 +47,32 @@ struct SettingsView: View {
                     Spacer()
                     Text(viewModel.settings.feedingTargetTime)
                         .foregroundStyle(.secondary)
+                }
+
+                DatePicker(
+                    "Wake Time",
+                    selection: Binding(
+                        get: { timeStringToDate(viewModel.settings.feedingWakeTime) },
+                        set: { viewModel.settings.feedingWakeTime = dateToTimeString($0) }
+                    ),
+                    displayedComponents: .hourAndMinute
+                )
+
+                HStack {
+                    Text("Average Days")
+                    Spacer()
+                    Text("\(viewModel.settings.feedingAverageDays)")
+                        .foregroundStyle(.secondary)
+                }
+                Stepper(
+                    value: Binding(
+                        get: { viewModel.settings.feedingAverageDays },
+                        set: { viewModel.settings.feedingAverageDays = $0 }
+                    ),
+                    in: 1...14,
+                    step: 1
+                ) {
+                    Text("Adjust")
                 }
             }
 

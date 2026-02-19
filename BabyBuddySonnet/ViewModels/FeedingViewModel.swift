@@ -32,6 +32,84 @@ final class FeedingViewModel {
         let totalOz: Double
     }
 
+    // MARK: - Cumulative Chart Data
+
+    struct CumulativeChartData {
+        let todaySeries: [(x: Double, y: Double)]
+        let expectedSeries: [(x: Double, y: Double)]
+        let averageSeries: [(x: Double, y: Double)]
+        let targetAmount: Double
+        let currentOz: Double
+        let status: Calculations.FeedingStatus
+        let expectedNow: Double
+        let averageNow: Double
+        let averageDays: Int
+    }
+
+    var cumulativeChartData: CumulativeChartData {
+        let settings = SettingsService.shared
+        let nowMinutes = Calculations.minutesSinceMidnight(Date())
+
+        let todaySeries = Calculations.buildCumulativeSteps(
+            feedings: todayFeedings,
+            upToMinutes: nowMinutes
+        )
+
+        let expectedSeries = Calculations.buildExpectedLine(
+            wakeTime: settings.feedingWakeTime,
+            targetTime: settings.feedingTargetTime,
+            targetAmount: settings.feedingTargetAmount
+        )
+
+        // Historical feedings = weekFeedings excluding today
+        let calendar = Calendar.current
+        let todayStart = calendar.startOfDay(for: Date())
+        let historicalFeedings = weekFeedings.filter { f in
+            guard let endDate = DateFormatting.parseISO(f.end) else { return false }
+            return endDate < todayStart
+        }
+
+        let averageSeries = Calculations.buildAverageLine(
+            historicalFeedings: historicalFeedings,
+            days: settings.feedingAverageDays
+        )
+
+        let currentOz = todaySeries.last?.y ?? 0
+
+        // Expected oz at current time (interpolate expected line)
+        let expectedNow = interpolate(series: expectedSeries, at: nowMinutes)
+        let averageNow = interpolate(series: averageSeries, at: nowMinutes)
+
+        let progress = Calculations.calculateFeedingProgress(
+            feedings: todayFeedings,
+            targetAmount: settings.feedingTargetAmount,
+            targetTime: settings.feedingTargetTime
+        )
+
+        return CumulativeChartData(
+            todaySeries: todaySeries,
+            expectedSeries: expectedSeries,
+            averageSeries: averageSeries,
+            targetAmount: settings.feedingTargetAmount,
+            currentOz: currentOz,
+            status: progress.status,
+            expectedNow: expectedNow,
+            averageNow: averageNow,
+            averageDays: settings.feedingAverageDays
+        )
+    }
+
+    private func interpolate(series: [(x: Double, y: Double)], at x: Double) -> Double {
+        var result = 0.0
+        for point in series {
+            if point.x <= x { result = point.y }
+            else { break }
+        }
+        return result
+    }
+
+    // MARK: - Weekly Bar Chart Data
+
     var weeklyChartData: [DailyFeedingData] {
         let calendar = Calendar.current
         var data: [DailyFeedingData] = []

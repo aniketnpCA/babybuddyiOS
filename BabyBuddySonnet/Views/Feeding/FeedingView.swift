@@ -93,6 +93,10 @@ struct FeedingView: View {
 
     @ViewBuilder
     private var todayContent: some View {
+        // Cumulative chart always shown at the top of Today tab
+        FeedingCumulativeChart(data: viewModel.cumulativeChartData)
+            .padding(.horizontal)
+
         if viewModel.isLoadingToday {
             LoadingView()
         } else if viewModel.todayFeedings.isEmpty {
@@ -111,12 +115,6 @@ struct FeedingView: View {
     @ViewBuilder
     private var weekContent: some View {
         VStack(spacing: 16) {
-            FeedingWeekChart(
-                data: viewModel.weeklyChartData,
-                target: settings.feedingTargetAmount
-            )
-            .padding(.horizontal)
-
             if viewModel.isLoadingWeek {
                 LoadingView()
             } else {

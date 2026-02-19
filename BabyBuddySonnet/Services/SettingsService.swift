@@ -21,6 +21,19 @@ final class SettingsService {
         set { store.set(newValue, forKey: Keys.feedingTargetTime); store.synchronize() }
     }
 
+    var feedingWakeTime: String {
+        get { store.string(forKey: Keys.feedingWakeTime) ?? AppConstants.defaultFeedingWakeTime }
+        set { store.set(newValue, forKey: Keys.feedingWakeTime); store.synchronize() }
+    }
+
+    var feedingAverageDays: Int {
+        get {
+            let val = Int(store.longLong(forKey: Keys.feedingAverageDays))
+            return val > 0 ? val : AppConstants.defaultFeedingAverageDays
+        }
+        set { store.set(Int64(newValue), forKey: Keys.feedingAverageDays); store.synchronize() }
+    }
+
     var sleepTargetHours: Double {
         get {
             let val = store.double(forKey: Keys.sleepTargetHours)
@@ -66,6 +79,8 @@ final class SettingsService {
     func resetToDefaults() {
         feedingTargetAmount = AppConstants.defaultFeedingTarget
         feedingTargetTime = AppConstants.defaultFeedingTargetTime
+        feedingWakeTime = AppConstants.defaultFeedingWakeTime
+        feedingAverageDays = AppConstants.defaultFeedingAverageDays
         sleepTargetHours = AppConstants.defaultSleepTargetHours
         frozenExpirationDays = AppConstants.defaultFrozenExpirationDays
         timezone = AppConstants.defaultTimezone
@@ -76,6 +91,8 @@ final class SettingsService {
     private enum Keys {
         static let feedingTargetAmount = "feedingTargetAmount"
         static let feedingTargetTime = "feedingTargetTime"
+        static let feedingWakeTime = "feedingWakeTime"
+        static let feedingAverageDays = "feedingAverageDays"
         static let sleepTargetHours = "sleepTargetHours"
         static let frozenExpirationDays = "frozenExpirationDays"
         static let timezone = "timezone"
