@@ -6,12 +6,13 @@ nonisolated struct DiaperChange: Codable, Identifiable, Sendable {
     let time: String
     let wet: Bool
     let solid: Bool
-    let color: String
+    let color: String?
     let amount: Double?
-    let notes: String
+    let notes: String?
 
     var stoolColor: StoolColor? {
-        StoolColor(rawValue: color)
+        guard let color else { return nil }
+        return StoolColor(rawValue: color)
     }
 
     var typeDescription: String {

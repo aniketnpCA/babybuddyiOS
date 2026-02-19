@@ -7,7 +7,7 @@ struct DiaperFormSheet: View {
 
     @State private var isWet = true
     @State private var isSolid = false
-    @State private var selectedColor: StoolColor = .brown
+    @State private var selectedColor: StoolColor = .yellow
     @State private var time: Date = Date()
     @State private var isSaving = false
     @State private var error: String?
