@@ -95,6 +95,10 @@ struct SettingsView: View {
                 }
             }
 
+            ReminderSettingsSection()
+
+            IntervalSettingsSection()
+
             Section("Timezone") {
                 Picker("Timezone", selection: Binding(
                     get: { viewModel.settings.timezone },
@@ -146,6 +150,12 @@ struct SettingsView: View {
                 }
             }
 
+            AISettingsSection()
+
+            TabOrderSection()
+
+            AboutSection()
+
             Section("Danger Zone") {
                 Button("Reset All Settings") {
                     showResetConfirmation = true
@@ -157,6 +167,9 @@ struct SettingsView: View {
                 }
                 .foregroundStyle(.red)
             }
+        }
+        .task {
+            await NotificationService.shared.refreshPermissionStatus()
         }
         .navigationTitle("Settings")
         .confirmationDialog("Reset Settings?", isPresented: $showResetConfirmation) {
@@ -175,3 +188,76 @@ struct SettingsView: View {
         }
     }
 }
+
+// MARK: - Tab Order Section
+
+struct TabOrderSection: View {
+    private let settings = SettingsService.shared
+    @State private var tabs: [AppTab] = []
+
+    var body: some View {
+        Section {
+            ForEach(tabs) { tab in
+                Label(tab.displayName, systemImage: tab.icon)
+            }
+            .onMove { from, to in
+                tabs.move(fromOffsets: from, toOffset: to)
+                settings.tabOrder = tabs.map(\.rawValue)
+            }
+        } header: {
+            Text("Tab Order")
+        } footer: {
+            Text("Drag to reorder tabs. Changes take effect immediately.")
+        }
+        .onAppear {
+            tabs = AppTab.resolveOrder(from: settings.tabOrder)
+        }
+    }
+}
+
+// MARK: - About Section
+
+struct AboutSection: View {
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+    }
+
+    private var buildNumber: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
+
+    var body: some View {
+        Section("About") {
+            HStack(spacing: 12) {
+                Image(systemName: "heart.fill")
+                    .font(.title2)
+                    .foregroundStyle(.pink)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Baby Buddy")
+                        .font(.headline)
+                    Text("Version \(appVersion) (\(buildNumber))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+
+            Text("Published with love in San Francisco")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+
+            Link(destination: URL(string: "https://github.com/babybuddy/babybuddy")!) {
+                Label("Baby Buddy on GitHub", systemImage: "link")
+            }
+
+            Link(destination: URL(string: "https://github.com/sponsors/babybuddy")!) {
+                Label("Support Baby Buddy", systemImage: "heart")
+            }
+
+            Link(destination: URL(string: "https://github.com/sponsors/aniketpatil")!) {
+                Label("Support the Developer", systemImage: "star")
+            }
+        }
+    }
+}
+

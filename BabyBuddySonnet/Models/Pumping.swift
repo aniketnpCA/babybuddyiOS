@@ -7,10 +7,10 @@ nonisolated struct Pumping: Codable, Identifiable, Sendable {
     let end: String
     let duration: String?
     let amount: Double
-    let notes: String
+    let notes: String?
 
     var milkCategory: MilkCategory {
-        MilkCategory.parse(from: notes)
+        MilkCategory.parse(from: notes ?? "")
     }
 }
 
@@ -55,5 +55,12 @@ nonisolated struct CreatePumpingInput: Codable, Sendable {
     let start: String
     let end: String
     let amount: Double
+    let notes: String?
+}
+
+nonisolated struct UpdatePumpingInput: Codable, Sendable {
+    let start: String?
+    let end: String?
+    let amount: Double?
     let notes: String?
 }

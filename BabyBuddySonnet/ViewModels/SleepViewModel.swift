@@ -5,8 +5,10 @@ import Foundation
 final class SleepViewModel {
     var todaySleep: [SleepRecord] = []
     var weekSleep: [SleepRecord] = []
+    var customSleep: [SleepRecord] = []
     var isLoadingToday = false
     var isLoadingWeek = false
+    var isLoadingCustom = false
     var error: String?
 
     var todayTotalMinutes: Int {
@@ -143,5 +145,36 @@ final class SleepViewModel {
 
     func deleteSleep(id: Int) async throws {
         try await APIClient.shared.delete(path: APIEndpoints.sleepSession(id))
+    }
+
+    func updateSleep(id: Int, _ input: UpdateSleepInput) async throws {
+        let _: SleepRecord = try await APIClient.shared.patch(
+            path: APIEndpoints.sleepSession(id),
+            body: input
+        )
+    }
+
+    func loadCustomRange(childID: Int, start: Date, end: Date) async {
+        isLoadingCustom = true
+        error = nil
+        defer { isLoadingCustom = false }
+
+        let startStr = DateFormatting.formatDateOnly(start)
+        let endStr = DateFormatting.formatDateOnly(Calendar.current.date(byAdding: .day, value: 1, to: end) ?? end)
+
+        do {
+            let response: PaginatedResponse<SleepRecord> = try await APIClient.shared.get(
+                path: APIEndpoints.sleep,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "start_min", value: startStr),
+                    URLQueryItem(name: "start_max", value: endStr),
+                    URLQueryItem(name: "limit", value: "1000"),
+                ]
+            )
+            customSleep = response.results.sorted { $0.end > $1.end }
+        } catch {
+            self.error = error.localizedDescription
+        }
     }
 }

@@ -7,14 +7,45 @@ final class DashboardViewModel {
     var dailySurplus: Double = 0
     var todaySleepMinutes: Int = 0
     var lastFeedingTime: String?
+    var lastPumpingTime: String?
+    var lastDiaperTime: String?
     var todayPumpedOz: Double = 0
     var todayConsumedOz: Double = 0
     var isLoading = false
     var error: String?
 
+    // Active timers
+    var activeTimers: [BabyTimer] = []
+
     // Raw feeding arrays for cumulative chart
     var todayFeedings: [Feeding] = []
     var weekFeedings: [Feeding] = []
+
+    // MARK: - Next Expected Times
+
+    var nextFeedingTime: Date? {
+        guard settings.isIntervalEnabled(for: .feeding),
+              let lastEnd = lastFeedingTime,
+              let date = DateFormatting.parseISO(lastEnd)
+        else { return nil }
+        return date.addingTimeInterval(settings.intervalHours(for: .feeding) * 3600)
+    }
+
+    var nextPumpingTime: Date? {
+        guard settings.isIntervalEnabled(for: .pumping),
+              let lastEnd = lastPumpingTime,
+              let date = DateFormatting.parseISO(lastEnd)
+        else { return nil }
+        return date.addingTimeInterval(settings.intervalHours(for: .pumping) * 3600)
+    }
+
+    var nextDiaperTime: Date? {
+        guard settings.isIntervalEnabled(for: .diaper),
+              let lastTime = lastDiaperTime,
+              let date = DateFormatting.parseISO(lastTime)
+        else { return nil }
+        return date.addingTimeInterval(settings.intervalHours(for: .diaper) * 3600)
+    }
 
     private let settings = SettingsService.shared
 
@@ -80,7 +111,7 @@ final class DashboardViewModel {
 
     // MARK: - Load
 
-    func loadDashboard(childID: Int) async {
+    func loadDashboard(childID: Int, childName: String? = nil) async {
         isLoading = true
         error = nil
         defer { isLoading = false }
@@ -131,10 +162,32 @@ final class DashboardViewModel {
                 ]
             )
 
+            // Fetch latest diaper change for next-expected timer
+            async let diaperResponse: PaginatedResponse<DiaperChange> = APIClient.shared.get(
+                path: APIEndpoints.changes,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "ordering", value: "-time"),
+                    URLQueryItem(name: "limit", value: "1"),
+                ]
+            )
+
+            // Fetch active timers
+            async let timersResponse: PaginatedResponse<BabyTimer> = APIClient.shared.get(
+                path: APIEndpoints.timers,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "active", value: "true"),
+                    URLQueryItem(name: "limit", value: "10"),
+                ]
+            )
+
             let feedings = try await feedingsResponse.results.filter { DateFormatting.isToday($0.start) }
             let allWeekFeedings = try await weekFeedingsResponse.results
             let pumpings = try await pumpingResponse.results.filter { DateFormatting.isToday($0.start) }
             let sleeps = try await sleepResponse.results.filter { DateFormatting.isToday($0.start) }
+            let latestDiaper = try await diaperResponse.results.first
+            activeTimers = try await timersResponse.results
 
             todayFeedings = feedings.sorted { $0.end > $1.end }
             weekFeedings = allWeekFeedings.sorted { $0.end > $1.end }
@@ -150,10 +203,37 @@ final class DashboardViewModel {
             dailySurplus = todayPumpedOz - todayConsumedOz
             todaySleepMinutes = Calculations.calculateTotalSleepMinutes(sleeps)
 
-            // Find most recent feeding
+            // Find most recent times for each category
             lastFeedingTime = feedings
                 .sorted { $0.end > $1.end }
                 .first?.end
+
+            lastPumpingTime = pumpings
+                .sorted { $0.end > $1.end }
+                .first?.end
+
+            lastDiaperTime = latestDiaper?.time
+
+            // Update Live Activity + Shared Data for Watch
+            if let name = childName {
+                LiveActivityService.shared.updateFromDashboard(
+                    childName: name,
+                    nextFeedingTime: nextFeedingTime,
+                    nextPumpingTime: nextPumpingTime,
+                    nextDiaperTime: nextDiaperTime,
+                    dailyConsumedOz: todayConsumedOz,
+                    dailyTargetOz: settings.feedingTargetAmount
+                )
+
+                SharedDataService.update(
+                    childName: name,
+                    nextFeedingTime: nextFeedingTime,
+                    nextPumpingTime: nextPumpingTime,
+                    nextDiaperTime: nextDiaperTime,
+                    dailyConsumedOz: todayConsumedOz,
+                    dailyTargetOz: settings.feedingTargetAmount
+                )
+            }
 
         } catch {
             self.error = error.localizedDescription

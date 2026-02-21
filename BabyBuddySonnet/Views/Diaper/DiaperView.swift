@@ -5,6 +5,9 @@ struct DiaperView: View {
     @State private var viewModel = DiaperViewModel()
     @State private var showForm = false
     @State private var selectedTab = 0
+    @State private var editingChange: DiaperChange?
+    @State private var customStart: Date = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+    @State private var customEnd: Date = Date()
 
     var body: some View {
         NavigationStack {
@@ -57,42 +60,56 @@ struct DiaperView: View {
                     Picker("Period", selection: $selectedTab) {
                         Text("Today").tag(0)
                         Text("This Week").tag(1)
+                        Text("Custom").tag(2)
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
 
                     if selectedTab == 0 {
                         todayContent
-                    } else {
+                    } else if selectedTab == 1 {
                         weekContent
+                    } else {
+                        customContent
                     }
                 }
                 .padding(.vertical)
             }
             .navigationTitle("Diaper")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showForm = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                    }
+            .overlay(alignment: .bottomTrailing) {
+                FloatingActionButton(color: .teal) {
+                    showForm = true
                 }
             }
             .sheet(isPresented: $showForm) {
                 DiaperFormSheet(childID: childID) {
-                    await viewModel.loadToday(childID: childID)
-                    await viewModel.loadWeek(childID: childID)
+                    await reloadAll()
+                }
+            }
+            .sheet(item: $editingChange) { change in
+                DiaperFormSheet(childID: childID, editing: change) {
+                    await reloadAll()
                 }
             }
             .refreshable {
-                await viewModel.loadToday(childID: childID)
-                await viewModel.loadWeek(childID: childID)
+                await reloadAll()
             }
             .task {
                 await viewModel.loadToday(childID: childID)
                 await viewModel.loadWeek(childID: childID)
             }
+        }
+    }
+
+    private func reloadAll() async {
+        await viewModel.loadToday(childID: childID)
+        await viewModel.loadWeek(childID: childID)
+        if selectedTab == 2 {
+            await viewModel.loadCustomRange(childID: childID, start: customStart, end: customEnd)
+        }
+        if let latestTime = viewModel.todayChanges.first?.time,
+           let date = DateFormatting.parseISO(latestTime) {
+            NotificationService.shared.rescheduleCategory(.diaper, lastEntryDate: date)
         }
     }
 
@@ -105,8 +122,12 @@ struct DiaperView: View {
         } else {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.todayChanges) { change in
-                    DiaperRowView(change: change)
-                        .padding(.horizontal)
+                    Button { editingChange = change } label: {
+                        DiaperRowView(change: change)
+                            .padding(.horizontal)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                     Divider().padding(.leading)
                 }
             }
@@ -122,7 +143,11 @@ struct DiaperView: View {
             ForEach(grouped, id: \.key) { group in
                 DisclosureGroup {
                     ForEach(group.items) { change in
-                        DiaperRowView(change: change)
+                        Button { editingChange = change } label: {
+                            DiaperRowView(change: change)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
                 } label: {
                     HStack {
@@ -135,6 +160,54 @@ struct DiaperView: View {
                     }
                 }
                 .padding(.horizontal)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var customContent: some View {
+        VStack(spacing: 12) {
+            HStack {
+                DatePicker("From", selection: $customStart, displayedComponents: .date)
+                    .labelsHidden()
+                Text("to")
+                    .foregroundStyle(.secondary)
+                DatePicker("To", selection: $customEnd, displayedComponents: .date)
+                    .labelsHidden()
+                Button("Search") {
+                    Task { await viewModel.loadCustomRange(childID: childID, start: customStart, end: customEnd) }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(.horizontal)
+
+            if viewModel.isLoadingCustom {
+                LoadingView()
+            } else if viewModel.customChanges.isEmpty {
+                EmptyStateView(icon: "magnifyingglass", title: "No results", subtitle: "Try a different date range")
+            } else {
+                let grouped = Calculations.groupByDate(viewModel.customChanges) { $0.time }
+                ForEach(grouped, id: \.key) { group in
+                    DisclosureGroup {
+                        ForEach(group.items) { change in
+                            Button { editingChange = change } label: {
+                                DiaperRowView(change: change)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } label: {
+                        HStack {
+                            Text(group.key)
+                                .font(.subheadline.weight(.medium))
+                            Spacer()
+                            Text("\(group.items.count) changes")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
             }
         }
     }

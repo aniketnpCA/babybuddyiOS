@@ -5,8 +5,10 @@ import Foundation
 final class DiaperViewModel {
     var todayChanges: [DiaperChange] = []
     var weekChanges: [DiaperChange] = []
+    var customChanges: [DiaperChange] = []
     var isLoadingToday = false
     var isLoadingWeek = false
+    var isLoadingCustom = false
     var error: String?
 
     var todayWetCount: Int {
@@ -83,5 +85,36 @@ final class DiaperViewModel {
 
     func deleteChange(id: Int) async throws {
         try await APIClient.shared.delete(path: APIEndpoints.change(id))
+    }
+
+    func updateChange(id: Int, _ input: UpdateDiaperChangeInput) async throws {
+        let _: DiaperChange = try await APIClient.shared.patch(
+            path: APIEndpoints.change(id),
+            body: input
+        )
+    }
+
+    func loadCustomRange(childID: Int, start: Date, end: Date) async {
+        isLoadingCustom = true
+        error = nil
+        defer { isLoadingCustom = false }
+
+        let startStr = DateFormatting.formatDateOnly(start)
+        let endStr = DateFormatting.formatDateOnly(Calendar.current.date(byAdding: .day, value: 1, to: end) ?? end)
+
+        do {
+            let response: PaginatedResponse<DiaperChange> = try await APIClient.shared.get(
+                path: APIEndpoints.changes,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "time_min", value: startStr),
+                    URLQueryItem(name: "time_max", value: endStr),
+                    URLQueryItem(name: "limit", value: "1000"),
+                ]
+            )
+            customChanges = response.results.sorted { $0.time > $1.time }
+        } catch {
+            self.error = error.localizedDescription
+        }
     }
 }

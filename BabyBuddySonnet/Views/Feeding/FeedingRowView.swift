@@ -17,7 +17,7 @@ struct FeedingRowView: View {
                     Text(feeding.feedingMethod?.displayName ?? feeding.method)
                         .font(.subheadline.weight(.medium))
                     if let amount = feeding.amount {
-                        Text("\(String(format: "%.1f", amount)) oz")
+                        Text("\(String(format: "%.2f", amount)) oz")
                             .font(.subheadline)
                             .foregroundStyle(.blue)
                     }

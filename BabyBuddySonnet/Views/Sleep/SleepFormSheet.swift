@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SleepFormSheet: View {
     let childID: Int
+    let editing: SleepRecord?
     let onSave: () async -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -10,6 +11,14 @@ struct SleepFormSheet: View {
     @State private var endTime: Date = Date()
     @State private var isSaving = false
     @State private var error: String?
+
+    init(childID: Int, editing: SleepRecord? = nil, onSave: @escaping () async -> Void) {
+        self.childID = childID
+        self.editing = editing
+        self.onSave = onSave
+    }
+
+    private var isEditing: Bool { editing != nil }
 
     var body: some View {
         NavigationStack {
@@ -35,7 +44,7 @@ struct SleepFormSheet: View {
                     }
                 }
             }
-            .navigationTitle("Log Sleep")
+            .navigationTitle(isEditing ? "Edit Sleep" : "Log Sleep")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -54,7 +63,15 @@ struct SleepFormSheet: View {
                     .disabled(isSaving)
                 }
             }
+            .onAppear { prefillIfEditing() }
         }
+    }
+
+    private func prefillIfEditing() {
+        guard let sleep = editing else { return }
+        isNap = sleep.nap
+        if let s = DateFormatting.parseISO(sleep.start) { startTime = s }
+        if let e = DateFormatting.parseISO(sleep.end) { endTime = e }
     }
 
     private func save() async {
@@ -62,19 +79,31 @@ struct SleepFormSheet: View {
         error = nil
         defer { isSaving = false }
 
-        let input = CreateSleepInput(
-            child: childID,
-            start: DateFormatting.formatForAPI(startTime),
-            end: DateFormatting.formatForAPI(endTime),
-            nap: isNap,
-            notes: nil
-        )
-
         do {
-            let _: SleepRecord = try await APIClient.shared.post(
-                path: APIEndpoints.sleep,
-                body: input
-            )
+            if let sleep = editing {
+                let input = UpdateSleepInput(
+                    start: DateFormatting.formatForAPI(startTime),
+                    end: DateFormatting.formatForAPI(endTime),
+                    nap: isNap,
+                    notes: nil
+                )
+                let _: SleepRecord = try await APIClient.shared.patch(
+                    path: APIEndpoints.sleepSession(sleep.id),
+                    body: input
+                )
+            } else {
+                let input = CreateSleepInput(
+                    child: childID,
+                    start: DateFormatting.formatForAPI(startTime),
+                    end: DateFormatting.formatForAPI(endTime),
+                    nap: isNap,
+                    notes: nil
+                )
+                let _: SleepRecord = try await APIClient.shared.post(
+                    path: APIEndpoints.sleep,
+                    body: input
+                )
+            }
             await onSave()
             dismiss()
         } catch {

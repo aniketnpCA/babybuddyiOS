@@ -5,8 +5,10 @@ import Foundation
 final class PumpingViewModel {
     var todayPumping: [Pumping] = []
     var weekPumping: [Pumping] = []
+    var customPumping: [Pumping] = []
     var isLoadingToday = false
     var isLoadingWeek = false
+    var isLoadingCustom = false
     var error: String?
 
     var todayTotalOz: Double {
@@ -113,5 +115,36 @@ final class PumpingViewModel {
 
     func deletePumping(id: Int) async throws {
         try await APIClient.shared.delete(path: APIEndpoints.pumpingSession(id))
+    }
+
+    func updatePumping(id: Int, _ input: UpdatePumpingInput) async throws {
+        let _: Pumping = try await APIClient.shared.patch(
+            path: APIEndpoints.pumpingSession(id),
+            body: input
+        )
+    }
+
+    func loadCustomRange(childID: Int, start: Date, end: Date) async {
+        isLoadingCustom = true
+        error = nil
+        defer { isLoadingCustom = false }
+
+        let startStr = DateFormatting.formatDateOnly(start)
+        let endStr = DateFormatting.formatDateOnly(Calendar.current.date(byAdding: .day, value: 1, to: end) ?? end)
+
+        do {
+            let response: PaginatedResponse<Pumping> = try await APIClient.shared.get(
+                path: APIEndpoints.pumping,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "start_min", value: startStr),
+                    URLQueryItem(name: "start_max", value: endStr),
+                    URLQueryItem(name: "limit", value: "1000"),
+                ]
+            )
+            customPumping = response.results.sorted { $0.end > $1.end }
+        } catch {
+            self.error = error.localizedDescription
+        }
     }
 }

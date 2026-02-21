@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PumpingFormSheet: View {
     let childID: Int
+    let editing: Pumping?
     let onSave: () async -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -11,6 +12,14 @@ struct PumpingFormSheet: View {
     @State private var endTime: Date = Date()
     @State private var isSaving = false
     @State private var error: String?
+
+    init(childID: Int, editing: Pumping? = nil, onSave: @escaping () async -> Void) {
+        self.childID = childID
+        self.editing = editing
+        self.onSave = onSave
+    }
+
+    private var isEditing: Bool { editing != nil }
 
     var body: some View {
         NavigationStack {
@@ -42,7 +51,7 @@ struct PumpingFormSheet: View {
                     }
                 }
             }
-            .navigationTitle("Log Pumping")
+            .navigationTitle(isEditing ? "Edit Pumping" : "Log Pumping")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -61,7 +70,16 @@ struct PumpingFormSheet: View {
                     .disabled(isSaving)
                 }
             }
+            .onAppear { prefillIfEditing() }
         }
+    }
+
+    private func prefillIfEditing() {
+        guard let pumping = editing else { return }
+        amount = pumping.amount
+        category = pumping.milkCategory
+        if let s = DateFormatting.parseISO(pumping.start) { startTime = s }
+        if let e = DateFormatting.parseISO(pumping.end) { endTime = e }
     }
 
     private func save() async {
@@ -69,19 +87,31 @@ struct PumpingFormSheet: View {
         error = nil
         defer { isSaving = false }
 
-        let input = CreatePumpingInput(
-            child: childID,
-            start: DateFormatting.formatForAPI(startTime),
-            end: DateFormatting.formatForAPI(endTime),
-            amount: amount,
-            notes: MilkCategory.createNotes(for: category)
-        )
-
         do {
-            let _: Pumping = try await APIClient.shared.post(
-                path: APIEndpoints.pumping,
-                body: input
-            )
+            if let pumping = editing {
+                let input = UpdatePumpingInput(
+                    start: DateFormatting.formatForAPI(startTime),
+                    end: DateFormatting.formatForAPI(endTime),
+                    amount: amount,
+                    notes: MilkCategory.createNotes(for: category)
+                )
+                let _: Pumping = try await APIClient.shared.patch(
+                    path: APIEndpoints.pumpingSession(pumping.id),
+                    body: input
+                )
+            } else {
+                let input = CreatePumpingInput(
+                    child: childID,
+                    start: DateFormatting.formatForAPI(startTime),
+                    end: DateFormatting.formatForAPI(endTime),
+                    amount: amount,
+                    notes: MilkCategory.createNotes(for: category)
+                )
+                let _: Pumping = try await APIClient.shared.post(
+                    path: APIEndpoints.pumping,
+                    body: input
+                )
+            }
             await onSave()
             dismiss()
         } catch {

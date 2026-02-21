@@ -19,7 +19,7 @@ struct AmountStepperView: View {
             }
             .buttonStyle(.plain)
 
-            Text(String(format: "%.2g", amount))
+            Text(String(format: "%.2f", amount))
                 .font(.system(size: 36, weight: .bold, design: .rounded))
                 .frame(minWidth: 80)
                 .contentTransition(.numericText())

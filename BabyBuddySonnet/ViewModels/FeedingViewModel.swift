@@ -5,8 +5,10 @@ import Foundation
 final class FeedingViewModel {
     var todayFeedings: [Feeding] = []
     var weekFeedings: [Feeding] = []
+    var customFeedings: [Feeding] = []
     var isLoadingToday = false
     var isLoadingWeek = false
+    var isLoadingCustom = false
     var error: String?
 
     var todayTotalOz: Double {
@@ -137,6 +139,33 @@ final class FeedingViewModel {
         return data
     }
 
+    var customChartData: [DailyFeedingData] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: customFeedings) { feeding -> String in
+            guard let date = DateFormatting.parseISO(feeding.start) else { return "" }
+            return DateFormatting.formatDateOnly(date)
+        }
+
+        let formatter = DateFormatter()
+        formatter.dateFormat = "M/d"
+
+        return grouped.keys.sorted().compactMap { dateKey -> DailyFeedingData? in
+            guard !dateKey.isEmpty, let items = grouped[dateKey] else { return nil }
+            let displayDate: String
+            if let parsed = DateFormatting.parseDate(dateKey) {
+                displayDate = formatter.string(from: parsed)
+            } else {
+                displayDate = dateKey
+            }
+            return DailyFeedingData(
+                id: dateKey,
+                date: dateKey,
+                displayDate: displayDate,
+                totalOz: Calculations.calculateTotalConsumed(items)
+            )
+        }
+    }
+
     func loadToday(childID: Int) async {
         isLoadingToday = true
         error = nil
@@ -195,5 +224,36 @@ final class FeedingViewModel {
 
     func deleteFeeding(id: Int) async throws {
         try await APIClient.shared.delete(path: APIEndpoints.feeding(id))
+    }
+
+    func updateFeeding(id: Int, _ input: UpdateFeedingInput) async throws {
+        let _: Feeding = try await APIClient.shared.patch(
+            path: APIEndpoints.feeding(id),
+            body: input
+        )
+    }
+
+    func loadCustomRange(childID: Int, start: Date, end: Date) async {
+        isLoadingCustom = true
+        error = nil
+        defer { isLoadingCustom = false }
+
+        let startStr = DateFormatting.formatDateOnly(start)
+        let endStr = DateFormatting.formatDateOnly(Calendar.current.date(byAdding: .day, value: 1, to: end) ?? end)
+
+        do {
+            let response: PaginatedResponse<Feeding> = try await APIClient.shared.get(
+                path: APIEndpoints.feedings,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "start_min", value: startStr),
+                    URLQueryItem(name: "start_max", value: endStr),
+                    URLQueryItem(name: "limit", value: "1000"),
+                ]
+            )
+            customFeedings = response.results.sorted { $0.end > $1.end }
+        } catch {
+            self.error = error.localizedDescription
+        }
     }
 }

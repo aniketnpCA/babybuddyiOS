@@ -14,7 +14,7 @@ struct PumpingRowView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text(String(format: "%.1f oz", pumping.amount))
+                    Text(String(format: "%.2f oz", pumping.amount))
                         .font(.subheadline.weight(.medium))
                     Text(pumping.milkCategory.displayName)
                         .font(.caption)

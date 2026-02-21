@@ -5,6 +5,9 @@ struct SleepView: View {
     @State private var viewModel = SleepViewModel()
     @State private var showForm = false
     @State private var selectedTab = 0
+    @State private var editingSleep: SleepRecord?
+    @State private var customStart: Date = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+    @State private var customEnd: Date = Date()
 
     private let settings = SettingsService.shared
 
@@ -59,42 +62,56 @@ struct SleepView: View {
                     Picker("Period", selection: $selectedTab) {
                         Text("Today").tag(0)
                         Text("This Week").tag(1)
+                        Text("Custom").tag(2)
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
 
                     if selectedTab == 0 {
                         todayContent
-                    } else {
+                    } else if selectedTab == 1 {
                         weekContent
+                    } else {
+                        customContent
                     }
                 }
                 .padding(.vertical)
             }
             .navigationTitle("Sleep")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    Button {
-                        showForm = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                    }
+            .overlay(alignment: .bottomTrailing) {
+                FloatingActionButton(color: .purple) {
+                    showForm = true
                 }
             }
             .sheet(isPresented: $showForm) {
                 SleepFormSheet(childID: childID) {
-                    await viewModel.loadToday(childID: childID)
-                    await viewModel.loadWeek(childID: childID)
+                    await reloadAll()
+                }
+            }
+            .sheet(item: $editingSleep) { sleep in
+                SleepFormSheet(childID: childID, editing: sleep) {
+                    await reloadAll()
                 }
             }
             .refreshable {
-                await viewModel.loadToday(childID: childID)
-                await viewModel.loadWeek(childID: childID)
+                await reloadAll()
             }
             .task {
                 await viewModel.loadToday(childID: childID)
                 await viewModel.loadWeek(childID: childID)
             }
+        }
+    }
+
+    private func reloadAll() async {
+        await viewModel.loadToday(childID: childID)
+        await viewModel.loadWeek(childID: childID)
+        if selectedTab == 2 {
+            await viewModel.loadCustomRange(childID: childID, start: customStart, end: customEnd)
+        }
+        if let latestEnd = viewModel.todaySleep.first?.end,
+           let date = DateFormatting.parseISO(latestEnd) {
+            NotificationService.shared.rescheduleCategory(.sleep, lastEntryDate: date)
         }
     }
 
@@ -107,8 +124,12 @@ struct SleepView: View {
         } else {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.todaySleep) { sleep in
-                    SleepRowView(sleep: sleep)
-                        .padding(.horizontal)
+                    Button { editingSleep = sleep } label: {
+                        SleepRowView(sleep: sleep)
+                            .padding(.horizontal)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                     Divider().padding(.leading)
                 }
             }
@@ -124,7 +145,11 @@ struct SleepView: View {
             ForEach(grouped, id: \.key) { group in
                 DisclosureGroup {
                     ForEach(group.items) { sleep in
-                        SleepRowView(sleep: sleep)
+                        Button { editingSleep = sleep } label: {
+                            SleepRowView(sleep: sleep)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
                     }
                 } label: {
                     HStack {
@@ -138,6 +163,55 @@ struct SleepView: View {
                     }
                 }
                 .padding(.horizontal)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var customContent: some View {
+        VStack(spacing: 12) {
+            HStack {
+                DatePicker("From", selection: $customStart, displayedComponents: .date)
+                    .labelsHidden()
+                Text("to")
+                    .foregroundStyle(.secondary)
+                DatePicker("To", selection: $customEnd, displayedComponents: .date)
+                    .labelsHidden()
+                Button("Search") {
+                    Task { await viewModel.loadCustomRange(childID: childID, start: customStart, end: customEnd) }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            .padding(.horizontal)
+
+            if viewModel.isLoadingCustom {
+                LoadingView()
+            } else if viewModel.customSleep.isEmpty {
+                EmptyStateView(icon: "magnifyingglass", title: "No results", subtitle: "Try a different date range")
+            } else {
+                let grouped = Calculations.groupByDate(viewModel.customSleep) { $0.start }
+                ForEach(grouped, id: \.key) { group in
+                    DisclosureGroup {
+                        ForEach(group.items) { sleep in
+                            Button { editingSleep = sleep } label: {
+                                SleepRowView(sleep: sleep)
+                                    .contentShape(Rectangle())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    } label: {
+                        HStack {
+                            Text(group.key)
+                                .font(.subheadline.weight(.medium))
+                            Spacer()
+                            let total = Calculations.calculateTotalSleepMinutes(group.items)
+                            Text(DateFormatting.formatMinutesToDuration(total))
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
             }
         }
     }

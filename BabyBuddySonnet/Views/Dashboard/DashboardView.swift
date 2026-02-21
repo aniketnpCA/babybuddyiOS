@@ -21,11 +21,23 @@ struct DashboardView: View {
                     ChildProfileCard(child: child)
                         .padding(.horizontal)
 
+                    if !viewModel.activeTimers.isEmpty {
+                        ActiveTimersCard(timers: viewModel.activeTimers)
+                            .padding(.horizontal)
+                    }
+
                     QuickActionsGrid(
                         showFeedingForm: $showFeedingForm,
                         showPumpingForm: $showPumpingForm,
                         showSleepForm: $showSleepForm,
                         showDiaperForm: $showDiaperForm
+                    )
+                    .padding(.horizontal)
+
+                    NextExpectedCard(
+                        nextFeedingTime: viewModel.nextFeedingTime,
+                        nextPumpingTime: viewModel.nextPumpingTime,
+                        nextDiaperTime: viewModel.nextDiaperTime
                     )
                     .padding(.horizontal)
 
@@ -77,29 +89,35 @@ struct DashboardView: View {
                 }
             }
             .refreshable {
-                await viewModel.loadDashboard(childID: child.id)
+                await viewModel.loadDashboard(childID: child.id, childName: child.displayName)
+                await NotificationService.shared.rescheduleAll(childID: child.id)
             }
             .task {
-                await viewModel.loadDashboard(childID: child.id)
+                await viewModel.loadDashboard(childID: child.id, childName: child.displayName)
+                await NotificationService.shared.rescheduleAll(childID: child.id)
             }
             .sheet(isPresented: $showFeedingForm) {
                 FeedingFormSheet(childID: child.id) {
-                    await viewModel.loadDashboard(childID: child.id)
+                    await viewModel.loadDashboard(childID: child.id, childName: child.displayName)
+                    await NotificationService.shared.rescheduleAll(childID: child.id)
                 }
             }
             .sheet(isPresented: $showPumpingForm) {
                 PumpingFormSheet(childID: child.id) {
-                    await viewModel.loadDashboard(childID: child.id)
+                    await viewModel.loadDashboard(childID: child.id, childName: child.displayName)
+                    await NotificationService.shared.rescheduleAll(childID: child.id)
                 }
             }
             .sheet(isPresented: $showSleepForm) {
                 SleepFormSheet(childID: child.id) {
-                    await viewModel.loadDashboard(childID: child.id)
+                    await viewModel.loadDashboard(childID: child.id, childName: child.displayName)
+                    await NotificationService.shared.rescheduleAll(childID: child.id)
                 }
             }
             .sheet(isPresented: $showDiaperForm) {
                 DiaperFormSheet(childID: child.id) {
-                    await viewModel.loadDashboard(childID: child.id)
+                    await viewModel.loadDashboard(childID: child.id, childName: child.displayName)
+                    await NotificationService.shared.rescheduleAll(childID: child.id)
                 }
             }
         }

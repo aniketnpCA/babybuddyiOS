@@ -9,6 +9,10 @@ nonisolated enum AppConstants {
     static let defaultFrozenExpirationDays: Int = 180
     static let defaultTimezone: String = "America/Los_Angeles"
 
+    // AI Defaults
+    static let defaultAIBaseURL: String = "https://api.openai.com"
+    static let defaultAIModel: String = "gpt-4o-mini"
+
     static let timezones: [(value: String, label: String)] = [
         ("America/New_York", "Eastern"),
         ("America/Chicago", "Central"),

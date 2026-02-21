@@ -6,9 +6,55 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		1FC2A1482F47B7CF000C6E65 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FC2A1472F47B7CF000C6E65 /* WidgetKit.framework */; };
+		1FC2A14A2F47B7CF000C6E65 /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FC2A1492F47B7CF000C6E65 /* SwiftUI.framework */; };
+		1FC2A1572F47B7D1000C6E65 /* BabyBuddyWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 1FC2A1452F47B7CF000C6E65 /* BabyBuddyWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		1FC2A1732F4824C4000C6E65 /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1FC2A1472F47B7CF000C6E65 /* WidgetKit.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1FC2A1552F47B7D1000C6E65 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1FC2A0892F46A416000C6E65 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1FC2A1442F47B7CF000C6E65;
+			remoteInfo = BabyBuddyWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		1FC2A15C2F47B7D1000C6E65 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				1FC2A1572F47B7D1000C6E65 /* BabyBuddyWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		1FC2A0912F46A416000C6E65 /* BabyBuddySonnet.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BabyBuddySonnet.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FC2A1452F47B7CF000C6E65 /* BabyBuddyWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = BabyBuddyWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FC2A1472F47B7CF000C6E65 /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
+		1FC2A1492F47B7CF000C6E65 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		1FC2A1652F47B822000C6E65 /* BabyBuddyWatch Watch App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "BabyBuddyWatch Watch App.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FC2A1712F47B9F0000C6E65 /* BabyBuddyWidgetExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = BabyBuddyWidgetExtension.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		1FC2A1582F47B7D1000C6E65 /* Exceptions for "BabyBuddyWidget" folder in "BabyBuddyWidgetExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 1FC2A1442F47B7CF000C6E65 /* BabyBuddyWidgetExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1FC2A0932F46A416000C6E65 /* BabyBuddySonnet */ = {
@@ -16,10 +62,40 @@
 			path = BabyBuddySonnet;
 			sourceTree = "<group>";
 		};
+		1FC2A14B2F47B7CF000C6E65 /* BabyBuddyWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				1FC2A1582F47B7D1000C6E65 /* Exceptions for "BabyBuddyWidget" folder in "BabyBuddyWidgetExtension" target */,
+			);
+			path = BabyBuddyWidget;
+			sourceTree = "<group>";
+		};
+		1FC2A1662F47B822000C6E65 /* BabyBuddyWatch Watch App */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "BabyBuddyWatch Watch App";
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		1FC2A08E2F46A416000C6E65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FC2A1732F4824C4000C6E65 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1FC2A1422F47B7CF000C6E65 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FC2A14A2F47B7CF000C6E65 /* SwiftUI.framework in Frameworks */,
+				1FC2A1482F47B7CF000C6E65 /* WidgetKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1FC2A1622F47B822000C6E65 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -32,7 +108,11 @@
 		1FC2A0882F46A416000C6E65 = {
 			isa = PBXGroup;
 			children = (
+				1FC2A1712F47B9F0000C6E65 /* BabyBuddyWidgetExtension.entitlements */,
 				1FC2A0932F46A416000C6E65 /* BabyBuddySonnet */,
+				1FC2A14B2F47B7CF000C6E65 /* BabyBuddyWidget */,
+				1FC2A1662F47B822000C6E65 /* BabyBuddyWatch Watch App */,
+				1FC2A1462F47B7CF000C6E65 /* Frameworks */,
 				1FC2A0922F46A416000C6E65 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -41,8 +121,19 @@
 			isa = PBXGroup;
 			children = (
 				1FC2A0912F46A416000C6E65 /* BabyBuddySonnet.app */,
+				1FC2A1452F47B7CF000C6E65 /* BabyBuddyWidgetExtension.appex */,
+				1FC2A1652F47B822000C6E65 /* BabyBuddyWatch Watch App.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		1FC2A1462F47B7CF000C6E65 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1FC2A1472F47B7CF000C6E65 /* WidgetKit.framework */,
+				1FC2A1492F47B7CF000C6E65 /* SwiftUI.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -55,10 +146,12 @@
 				1FC2A08D2F46A416000C6E65 /* Sources */,
 				1FC2A08E2F46A416000C6E65 /* Frameworks */,
 				1FC2A08F2F46A416000C6E65 /* Resources */,
+				1FC2A15C2F47B7D1000C6E65 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				1FC2A1562F47B7D1000C6E65 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1FC2A0932F46A416000C6E65 /* BabyBuddySonnet */,
@@ -68,6 +161,50 @@
 			);
 			productName = BabyBuddySonnet;
 			productReference = 1FC2A0912F46A416000C6E65 /* BabyBuddySonnet.app */;
+			productType = "com.apple.product-type.application";
+		};
+		1FC2A1442F47B7CF000C6E65 /* BabyBuddyWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1FC2A1592F47B7D1000C6E65 /* Build configuration list for PBXNativeTarget "BabyBuddyWidgetExtension" */;
+			buildPhases = (
+				1FC2A1412F47B7CF000C6E65 /* Sources */,
+				1FC2A1422F47B7CF000C6E65 /* Frameworks */,
+				1FC2A1432F47B7CF000C6E65 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1FC2A14B2F47B7CF000C6E65 /* BabyBuddyWidget */,
+			);
+			name = BabyBuddyWidgetExtension;
+			packageProductDependencies = (
+			);
+			productName = BabyBuddyWidgetExtension;
+			productReference = 1FC2A1452F47B7CF000C6E65 /* BabyBuddyWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		1FC2A1642F47B822000C6E65 /* BabyBuddyWatch Watch App */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1FC2A16D2F47B824000C6E65 /* Build configuration list for PBXNativeTarget "BabyBuddyWatch Watch App" */;
+			buildPhases = (
+				1FC2A1612F47B822000C6E65 /* Sources */,
+				1FC2A1622F47B822000C6E65 /* Frameworks */,
+				1FC2A1632F47B822000C6E65 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				1FC2A1662F47B822000C6E65 /* BabyBuddyWatch Watch App */,
+			);
+			name = "BabyBuddyWatch Watch App";
+			packageProductDependencies = (
+			);
+			productName = "BabyBuddyWatch Watch App";
+			productReference = 1FC2A1652F47B822000C6E65 /* BabyBuddyWatch Watch App.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -81,6 +218,12 @@
 				LastUpgradeCheck = 2620;
 				TargetAttributes = {
 					1FC2A0902F46A416000C6E65 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					1FC2A1442F47B7CF000C6E65 = {
+						CreatedOnToolsVersion = 26.2;
+					};
+					1FC2A1642F47B822000C6E65 = {
 						CreatedOnToolsVersion = 26.2;
 					};
 				};
@@ -100,12 +243,28 @@
 			projectRoot = "";
 			targets = (
 				1FC2A0902F46A416000C6E65 /* BabyBuddySonnet */,
+				1FC2A1442F47B7CF000C6E65 /* BabyBuddyWidgetExtension */,
+				1FC2A1642F47B822000C6E65 /* BabyBuddyWatch Watch App */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1FC2A08F2F46A416000C6E65 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1FC2A1432F47B7CF000C6E65 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1FC2A1632F47B822000C6E65 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -122,7 +281,29 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		1FC2A1412F47B7CF000C6E65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		1FC2A1612F47B822000C6E65 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		1FC2A1562F47B7D1000C6E65 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1FC2A1442F47B7CF000C6E65 /* BabyBuddyWidgetExtension */;
+			targetProxy = 1FC2A1552F47B7D1000C6E65 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1FC2A09C2F46A41B000C6E65 /* Debug */ = {
@@ -251,6 +432,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = BabyBuddySonnet/BabyBuddySonnet.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 498N3HMS7D;
@@ -283,6 +466,8 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
+				CODE_SIGN_ENTITLEMENTS = BabyBuddySonnet/BabyBuddySonnet.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 498N3HMS7D;
@@ -310,6 +495,136 @@
 			};
 			name = Release;
 		};
+		1FC2A15A2F47B7D1000C6E65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = BabyBuddyWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 498N3HMS7D;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BabyBuddyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BabyBuddyWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.BabyBuddySonnet.BabyBuddyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1FC2A15B2F47B7D1000C6E65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_WIDGET_BACKGROUND_COLOR_NAME = WidgetBackground;
+				CODE_SIGN_ENTITLEMENTS = BabyBuddyWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 498N3HMS7D;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = BabyBuddyWidget/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = BabyBuddyWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.BabyBuddySonnet.BabyBuddyWidget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1FC2A16E2F47B824000C6E65 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "BabyBuddyWatch Watch App/BabyBuddyWatch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 498N3HMS7D;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = BabyBuddyWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = .watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Debug;
+		};
+		1FC2A16F2F47B824000C6E65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "BabyBuddyWatch Watch App/BabyBuddyWatch Watch App.entitlements";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 498N3HMS7D;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = BabyBuddyWatch;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = .watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 26.2;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -327,6 +642,24 @@
 			buildConfigurations = (
 				1FC2A09F2F46A41B000C6E65 /* Debug */,
 				1FC2A0A02F46A41B000C6E65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1FC2A1592F47B7D1000C6E65 /* Build configuration list for PBXNativeTarget "BabyBuddyWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1FC2A15A2F47B7D1000C6E65 /* Debug */,
+				1FC2A15B2F47B7D1000C6E65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		1FC2A16D2F47B824000C6E65 /* Build configuration list for PBXNativeTarget "BabyBuddyWatch Watch App" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1FC2A16E2F47B824000C6E65 /* Debug */,
+				1FC2A16F2F47B824000C6E65 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

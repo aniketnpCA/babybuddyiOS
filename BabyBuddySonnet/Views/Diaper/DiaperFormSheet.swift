@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DiaperFormSheet: View {
     let childID: Int
+    let editing: DiaperChange?
     let onSave: () async -> Void
     @Environment(\.dismiss) private var dismiss
 
@@ -11,6 +12,14 @@ struct DiaperFormSheet: View {
     @State private var time: Date = Date()
     @State private var isSaving = false
     @State private var error: String?
+
+    init(childID: Int, editing: DiaperChange? = nil, onSave: @escaping () async -> Void) {
+        self.childID = childID
+        self.editing = editing
+        self.onSave = onSave
+    }
+
+    private var isEditing: Bool { editing != nil }
 
     var body: some View {
         NavigationStack {
@@ -60,7 +69,7 @@ struct DiaperFormSheet: View {
                     }
                 }
             }
-            .navigationTitle("Log Diaper")
+            .navigationTitle(isEditing ? "Edit Diaper" : "Log Diaper")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -79,7 +88,16 @@ struct DiaperFormSheet: View {
                     .disabled(isSaving || (!isWet && !isSolid))
                 }
             }
+            .onAppear { prefillIfEditing() }
         }
+    }
+
+    private func prefillIfEditing() {
+        guard let change = editing else { return }
+        isWet = change.wet
+        isSolid = change.solid
+        if let sc = change.stoolColor { selectedColor = sc }
+        if let t = DateFormatting.parseISO(change.time) { time = t }
     }
 
     private func save() async {
@@ -87,20 +105,33 @@ struct DiaperFormSheet: View {
         error = nil
         defer { isSaving = false }
 
-        let input = CreateDiaperChangeInput(
-            child: childID,
-            time: DateFormatting.formatForAPI(time),
-            wet: isWet,
-            solid: isSolid,
-            color: isSolid ? selectedColor.rawValue : "",
-            notes: nil
-        )
-
         do {
-            let _: DiaperChange = try await APIClient.shared.post(
-                path: APIEndpoints.changes,
-                body: input
-            )
+            if let change = editing {
+                let input = UpdateDiaperChangeInput(
+                    time: DateFormatting.formatForAPI(time),
+                    wet: isWet,
+                    solid: isSolid,
+                    color: isSolid ? selectedColor.rawValue : "",
+                    notes: nil
+                )
+                let _: DiaperChange = try await APIClient.shared.patch(
+                    path: APIEndpoints.change(change.id),
+                    body: input
+                )
+            } else {
+                let input = CreateDiaperChangeInput(
+                    child: childID,
+                    time: DateFormatting.formatForAPI(time),
+                    wet: isWet,
+                    solid: isSolid,
+                    color: isSolid ? selectedColor.rawValue : "",
+                    notes: nil
+                )
+                let _: DiaperChange = try await APIClient.shared.post(
+                    path: APIEndpoints.changes,
+                    body: input
+                )
+            }
             await onSave()
             dismiss()
         } catch {

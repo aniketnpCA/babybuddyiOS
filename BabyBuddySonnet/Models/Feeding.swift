@@ -9,7 +9,7 @@ nonisolated struct Feeding: Codable, Identifiable, Sendable {
     let type: String
     let method: String
     let amount: Double?
-    let notes: String
+    let notes: String?
 
     var feedingType: FeedingType? {
         FeedingType(rawValue: type)
@@ -73,6 +73,15 @@ nonisolated struct CreateFeedingInput: Codable, Sendable {
     let end: String
     let type: String
     let method: String
+    let amount: Double?
+    let notes: String?
+}
+
+nonisolated struct UpdateFeedingInput: Codable, Sendable {
+    let start: String?
+    let end: String?
+    let type: String?
+    let method: String?
     let amount: Double?
     let notes: String?
 }

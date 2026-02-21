@@ -103,7 +103,12 @@ actor APIClient {
         guard let baseURL else { throw APIError.noToken }
         guard let token else { throw APIError.noToken }
 
-        let fullURL = baseURL.appendingPathComponent(path)
+        // Use string concatenation to preserve trailing slashes in API paths.
+        // appendingPathComponent() strips trailing slashes, which causes Django
+        // to 301-redirect and drop the Authorization header — leading to 530/403 errors.
+        guard let fullURL = URL(string: baseURL.absoluteString + path) else {
+            throw APIError.invalidURL
+        }
         var components = URLComponents(url: fullURL, resolvingAgainstBaseURL: true)
         if !queryItems.isEmpty {
             components?.queryItems = queryItems

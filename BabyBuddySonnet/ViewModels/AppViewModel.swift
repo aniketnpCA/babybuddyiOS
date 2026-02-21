@@ -1,4 +1,5 @@
 import Foundation
+import UserNotifications
 
 @Observable
 @MainActor
@@ -48,6 +49,13 @@ final class AppViewModel {
 
         child = response.results.first
         isAuthenticated = true
+
+        // Request notification permission on first successful login
+        let notificationService = NotificationService.shared
+        await notificationService.refreshPermissionStatus()
+        if notificationService.permissionStatus == .notDetermined {
+            _ = await notificationService.requestPermission()
+        }
     }
 
     func signOut() {
@@ -55,6 +63,9 @@ final class AppViewModel {
         settings.serverURL = ""
         child = nil
         isAuthenticated = false
+        NotificationService.shared.cancelAll()
+        LiveActivityService.shared.endActivity()
+        SharedDataService.clear()
     }
 
     func refreshChild() async {
