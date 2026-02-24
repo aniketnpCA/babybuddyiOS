@@ -5,6 +5,8 @@ struct DiaperFormSheet: View {
     let editing: DiaperChange?
     let onSave: () async -> Void
     @Environment(\.dismiss) private var dismiss
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     @State private var isWet = true
     @State private var isSolid = false
@@ -25,12 +27,12 @@ struct DiaperFormSheet: View {
         NavigationStack {
             Form {
                 Section("Type") {
-                    Toggle("Wet", isOn: $isWet)
-                    Toggle("Solid", isOn: $isSolid)
+                    Toggle(theme.diaperWetLabel, isOn: $isWet)
+                    Toggle(theme.diaperSolidLabel, isOn: $isSolid)
                 }
 
                 if isSolid {
-                    Section("Stool Color") {
+                    Section(theme.diaperColorSectionTitle) {
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 12) {
                             ForEach(AppConstants.diaperColors, id: \.color) { item in
                                 Button {
@@ -69,7 +71,7 @@ struct DiaperFormSheet: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? "Edit Diaper" : "Log Diaper")
+            .navigationTitle(isEditing ? theme.editDiaperTitle : theme.logDiaperTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

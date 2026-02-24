@@ -23,6 +23,9 @@ final class SettingsService {
     // Tab order cache
     private var _tabOrder: [String] = []
 
+    // Dog Mode cache — required so @Observable can track changes
+    private var _isDogMode: Bool = false
+
     // MARK: - Feeding Settings
 
     var feedingTargetAmount: Double {
@@ -162,6 +165,15 @@ final class SettingsService {
         set { _tabOrder = newValue; store.set(newValue, forKey: Keys.tabOrder); store.synchronize() }
     }
 
+    // MARK: - Appearance
+
+    var isDogMode: Bool {
+        get { _isDogMode }
+        set { _isDogMode = newValue; store.set(newValue, forKey: Keys.isDogMode); store.synchronize() }
+    }
+
+    var theme: PetModeTheme { isDogMode ? .dog : .baby }
+
     // MARK: - Init
 
     private init() {
@@ -176,6 +188,7 @@ final class SettingsService {
         _aiBaseURL = store.string(forKey: Keys.aiBaseURL) ?? AppConstants.defaultAIBaseURL
         _aiModel = store.string(forKey: Keys.aiModel) ?? AppConstants.defaultAIModel
         _tabOrder = (store.array(forKey: Keys.tabOrder) as? [String]) ?? AppTab.defaultOrder.map(\.rawValue)
+        _isDogMode = store.bool(forKey: Keys.isDogMode)
         NotificationCenter.default.addObserver(
             forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: store,
@@ -193,6 +206,7 @@ final class SettingsService {
             self._aiBaseURL = self.store.string(forKey: Keys.aiBaseURL) ?? AppConstants.defaultAIBaseURL
             self._aiModel = self.store.string(forKey: Keys.aiModel) ?? AppConstants.defaultAIModel
             self._tabOrder = (self.store.array(forKey: Keys.tabOrder) as? [String]) ?? AppTab.defaultOrder.map(\.rawValue)
+            self._isDogMode = self.store.bool(forKey: Keys.isDogMode)
         }
     }
 
@@ -222,6 +236,9 @@ final class SettingsService {
 
         // Reset tab order
         tabOrder = AppTab.defaultOrder.map(\.rawValue)
+
+        // Reset appearance
+        isDogMode = false
     }
 
     // MARK: - Private Key Helpers
@@ -257,5 +274,6 @@ final class SettingsService {
         static let aiBaseURL = "aiBaseURL"
         static let aiModel = "aiModel"
         static let tabOrder = "tabOrder"
+        static let isDogMode = "isDogMode"
     }
 }

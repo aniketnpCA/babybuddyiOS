@@ -4,6 +4,8 @@ struct NextExpectedCard: View {
     let nextFeedingTime: Date?
     let nextPumpingTime: Date?
     let nextDiaperTime: Date?
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         let items = buildItems()
@@ -28,8 +30,8 @@ struct NextExpectedCard: View {
 
         if let time = nextFeedingTime {
             items.append(NextExpectedItem(
-                category: "Feeding",
-                icon: "drop.fill",
+                category: theme.nextFeedingCategory,
+                icon: theme.feedingTabIcon,
                 color: .blue,
                 expectedTime: time
             ))
@@ -37,8 +39,8 @@ struct NextExpectedCard: View {
 
         if let time = nextPumpingTime {
             items.append(NextExpectedItem(
-                category: "Pumping",
-                icon: "drop.triangle.fill",
+                category: theme.nextPumpingCategory,
+                icon: theme.pumpingTabIcon,
                 color: .orange,
                 expectedTime: time
             ))
@@ -46,8 +48,8 @@ struct NextExpectedCard: View {
 
         if let time = nextDiaperTime {
             items.append(NextExpectedItem(
-                category: "Diaper",
-                icon: "circle.dotted",
+                category: theme.nextDiaperCategory,
+                icon: theme.diaperTabIcon,
                 color: .green,
                 expectedTime: time
             ))

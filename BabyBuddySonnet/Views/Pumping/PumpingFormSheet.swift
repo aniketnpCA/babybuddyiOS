@@ -20,6 +20,8 @@ struct PumpingFormSheet: View {
     }
 
     private var isEditing: Bool { editing != nil }
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         NavigationStack {
@@ -32,7 +34,7 @@ struct PumpingFormSheet: View {
                 Section("Category") {
                     Picker("Category", selection: $category) {
                         ForEach(MilkCategory.allCases, id: \.self) { cat in
-                            Text(cat.displayName).tag(cat)
+                            Text(theme.milkCategoryNames[cat.rawValue] ?? cat.displayName).tag(cat)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -51,7 +53,7 @@ struct PumpingFormSheet: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? "Edit Pumping" : "Log Pumping")
+            .navigationTitle(isEditing ? theme.editPumpingTitle : theme.logPumpingTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

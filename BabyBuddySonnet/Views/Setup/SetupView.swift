@@ -3,6 +3,8 @@ import SwiftUI
 struct SetupView: View {
     @Environment(AppViewModel.self) private var appViewModel
     @State private var viewModel = SetupViewModel()
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         NavigationStack {
@@ -10,12 +12,12 @@ struct SetupView: View {
                 VStack(spacing: 32) {
                     // Header
                     VStack(spacing: 12) {
-                        Image(systemName: "heart.fill")
+                        Image(systemName: theme.aboutAppIcon)
                             .font(.system(size: 64))
-                            .foregroundStyle(.pink)
-                        Text("Baby Buddy")
+                            .foregroundStyle(theme.aboutIconColor == "brown" ? Color.brown : Color.pink)
+                        Text(theme.appName)
                             .font(.largeTitle.bold())
-                        Text("Connect to your Baby Buddy server")
+                        Text(theme.setupTagline)
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -40,7 +42,7 @@ struct SetupView: View {
                                 .textFieldStyle(.roundedBorder)
                                 .textInputAutocapitalization(.never)
                                 .autocorrectionDisabled()
-                            Text("Find this in Baby Buddy under User Settings")
+                            Text(theme.setupHint)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }

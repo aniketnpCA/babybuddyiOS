@@ -54,7 +54,7 @@ struct ContentView: View {
     var body: some View {
         Group {
             if appViewModel.isLoading {
-                LoadingView(message: "Connecting to Baby Buddy...")
+                LoadingView(message: "Connecting to \(SettingsService.shared.theme.appName)...")
             } else if appViewModel.isAuthenticated, let child = appViewModel.child {
                 MainTabView(child: child)
             } else {
@@ -72,6 +72,7 @@ struct ContentView: View {
 struct MainTabView: View {
     let child: Child
     private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     private var orderedTabs: [AppTab] {
         AppTab.resolveOrder(from: settings.tabOrder)
@@ -80,7 +81,7 @@ struct MainTabView: View {
     var body: some View {
         TabView {
             ForEach(orderedTabs) { tab in
-                Tab(tab.displayName, systemImage: tab.icon) {
+                Tab(theme.tabDisplayName(for: tab), systemImage: theme.tabIcon(for: tab)) {
                     viewForTab(tab)
                 }
             }

@@ -9,6 +9,9 @@ struct PumpingView: View {
     @State private var customStart: Date = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
     @State private var customEnd: Date = Date()
 
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -25,14 +28,14 @@ struct PumpingView: View {
                             Text(String(format: "%.2f", viewModel.todayTotalOz))
                                 .font(.title.bold())
                                 .foregroundStyle(.orange)
-                            Text("oz today")
+                            Text(theme.pumpingOzStat)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         VStack(spacing: 4) {
                             Text("\(viewModel.todayPumping.count)")
                                 .font(.title.bold())
-                            Text("sessions")
+                            Text(theme.pumpingSessionsStat)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -61,7 +64,7 @@ struct PumpingView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("Pumping")
+            .navigationTitle(theme.pumpingNavigationTitle)
             .overlay(alignment: .bottomTrailing) {
                 FloatingActionButton(color: .orange) {
                     showForm = true
@@ -104,7 +107,7 @@ struct PumpingView: View {
         if viewModel.isLoadingToday {
             LoadingView()
         } else if viewModel.todayPumping.isEmpty {
-            EmptyStateView(icon: "drop.triangle", title: "No pumping today", subtitle: "Tap + to log a pumping session")
+            EmptyStateView(icon: theme.pumpingTabIcon, title: theme.pumpingEmptyTitle, subtitle: theme.pumpingEmptySubtitle)
         } else {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.todayPumping) { session in

@@ -3,6 +3,8 @@ import SwiftUI
 struct DailySurplusCard: View {
     let pumpedOz: Double
     let consumedOz: Double
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var surplus: Double { pumpedOz - consumedOz }
 
@@ -11,14 +13,14 @@ struct DailySurplusCard: View {
             HStack {
                 Image(systemName: "arrow.up.arrow.down")
                     .foregroundStyle(.orange)
-                Text("Daily Surplus")
+                Text(theme.surplusCardTitle)
                     .font(.headline)
                 Spacer()
             }
 
             HStack(spacing: 24) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Pumped")
+                    Text(theme.surplusCardPumped)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(String(format: "%.1f oz", pumpedOz))
@@ -27,7 +29,7 @@ struct DailySurplusCard: View {
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Consumed")
+                    Text(theme.surplusCardConsumed)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(String(format: "%.1f oz", consumedOz))
@@ -38,7 +40,7 @@ struct DailySurplusCard: View {
                 Spacer()
 
                 VStack(alignment: .trailing, spacing: 4) {
-                    Text("Surplus")
+                    Text(theme.surplusCardSurplus)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     Text(String(format: "%+.1f oz", surplus))

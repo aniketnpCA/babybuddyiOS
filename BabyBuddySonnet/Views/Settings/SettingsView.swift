@@ -24,6 +24,20 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
+            Section("Appearance") {
+                Toggle(isOn: Binding(
+                    get: { viewModel.settings.isDogMode },
+                    set: { viewModel.settings.isDogMode = $0 }
+                )) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Dog Mode")
+                        Text("Woof! Track your pup's routine")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+
             Section("Daily Feeding Goal") {
                 HStack {
                     Text("Target Amount")
@@ -193,12 +207,13 @@ struct SettingsView: View {
 
 struct TabOrderSection: View {
     private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
     @State private var tabs: [AppTab] = []
 
     var body: some View {
         Section {
             ForEach(tabs) { tab in
-                Label(tab.displayName, systemImage: tab.icon)
+                Label(theme.tabDisplayName(for: tab), systemImage: theme.tabIcon(for: tab))
             }
             .onMove { from, to in
                 tabs.move(fromOffsets: from, toOffset: to)
@@ -218,6 +233,9 @@ struct TabOrderSection: View {
 // MARK: - About Section
 
 struct AboutSection: View {
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
+
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
     }
@@ -229,11 +247,11 @@ struct AboutSection: View {
     var body: some View {
         Section("About") {
             HStack(spacing: 12) {
-                Image(systemName: "heart.fill")
+                Image(systemName: theme.aboutAppIcon)
                     .font(.title2)
-                    .foregroundStyle(.pink)
+                    .foregroundStyle(theme.aboutIconColor == "brown" ? Color.brown : Color.pink)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Baby Buddy")
+                    Text(theme.aboutAppName)
                         .font(.headline)
                     Text("Version \(appVersion) (\(buildNumber))")
                         .font(.caption)
@@ -247,11 +265,11 @@ struct AboutSection: View {
                 .foregroundStyle(.secondary)
 
             Link(destination: URL(string: "https://github.com/babybuddy/babybuddy")!) {
-                Label("Baby Buddy on GitHub", systemImage: "link")
+                Label("\(theme.aboutAppName) on GitHub", systemImage: "link")
             }
 
             Link(destination: URL(string: "https://github.com/sponsors/babybuddy")!) {
-                Label("Support Baby Buddy", systemImage: "heart")
+                Label("Support \(theme.aboutAppName)", systemImage: "heart")
             }
 
             Link(destination: URL(string: "https://github.com/sponsors/aniketpatil")!) {

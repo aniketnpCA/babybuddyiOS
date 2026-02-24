@@ -2,6 +2,8 @@ import SwiftUI
 
 struct FeedingRowView: View {
     let feeding: Feeding
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -14,7 +16,7 @@ struct FeedingRowView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text(feeding.feedingMethod?.displayName ?? feeding.method)
+                    Text(theme.feedingMethodNames[feeding.method] ?? feeding.feedingMethod?.displayName ?? feeding.method)
                         .font(.subheadline.weight(.medium))
                     if let amount = feeding.amount {
                         Text("\(String(format: "%.2f", amount)) oz")
@@ -22,7 +24,7 @@ struct FeedingRowView: View {
                             .foregroundStyle(.blue)
                     }
                 }
-                Text(feeding.feedingType?.displayName ?? feeding.type)
+                Text(theme.feedingTypeNames[feeding.type] ?? feeding.feedingType?.displayName ?? feeding.type)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }

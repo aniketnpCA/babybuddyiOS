@@ -10,6 +10,7 @@ struct FeedingView: View {
     @State private var customEnd: Date = Date()
 
     private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         NavigationStack {
@@ -70,7 +71,7 @@ struct FeedingView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("Feeding")
+            .navigationTitle(theme.feedingNavigationTitle)
             .overlay(alignment: .bottomTrailing) {
                 FloatingActionButton(color: .blue) {
                     showForm = true
@@ -116,7 +117,7 @@ struct FeedingView: View {
         if viewModel.isLoadingToday {
             LoadingView()
         } else if viewModel.todayFeedings.isEmpty {
-            EmptyStateView(icon: "drop", title: "No feedings today", subtitle: "Tap + to log a feeding")
+            EmptyStateView(icon: theme.feedingTabIcon, title: theme.feedingEmptyTitle, subtitle: theme.feedingEmptySubtitle)
         } else {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.todayFeedings) { feeding in

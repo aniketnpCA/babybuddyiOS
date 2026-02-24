@@ -21,6 +21,8 @@ struct FeedingFormSheet: View {
     }
 
     private var isEditing: Bool { editing != nil }
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         NavigationStack {
@@ -28,7 +30,7 @@ struct FeedingFormSheet: View {
                 Section("Type") {
                     Picker("Feeding Type", selection: $feedingType) {
                         ForEach(FeedingType.allCases, id: \.self) { type in
-                            Text(type.displayName).tag(type)
+                            Text(theme.feedingTypeNames[type.rawValue] ?? type.displayName).tag(type)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -37,7 +39,7 @@ struct FeedingFormSheet: View {
                 Section("Method") {
                     Picker("Method", selection: $feedingMethod) {
                         ForEach(FeedingMethod.allCases, id: \.self) { method in
-                            Text(method.displayName).tag(method)
+                            Text(theme.feedingMethodNames[method.rawValue] ?? method.displayName).tag(method)
                         }
                     }
                 }
@@ -62,7 +64,7 @@ struct FeedingFormSheet: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? "Edit Feeding" : "Log Feeding")
+            .navigationTitle(isEditing ? theme.editFeedingTitle : theme.logFeedingTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

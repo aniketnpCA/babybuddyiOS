@@ -5,6 +5,8 @@ struct QuickActionsGrid: View {
     @Binding var showPumpingForm: Bool
     @Binding var showSleepForm: Bool
     @Binding var showDiaperForm: Bool
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         LazyVGrid(columns: [
@@ -12,32 +14,32 @@ struct QuickActionsGrid: View {
             GridItem(.flexible()),
         ], spacing: 12) {
             quickActionButton(
-                title: "Feeding",
-                icon: "drop.fill",
+                title: theme.quickActionFeedingLabel,
+                icon: theme.feedingTabIcon,
                 color: .blue
             ) {
                 showFeedingForm = true
             }
 
             quickActionButton(
-                title: "Pumping",
-                icon: "drop.triangle.fill",
+                title: theme.quickActionPumpingLabel,
+                icon: theme.pumpingTabIcon,
                 color: .orange
             ) {
                 showPumpingForm = true
             }
 
             quickActionButton(
-                title: "Sleep",
-                icon: "moon.fill",
+                title: theme.quickActionSleepLabel,
+                icon: theme.sleepTabIcon,
                 color: .purple
             ) {
                 showSleepForm = true
             }
 
             quickActionButton(
-                title: "Diaper",
-                icon: "circle.dotted",
+                title: theme.quickActionDiaperLabel,
+                icon: theme.diaperTabIcon,
                 color: .teal
             ) {
                 showDiaperForm = true

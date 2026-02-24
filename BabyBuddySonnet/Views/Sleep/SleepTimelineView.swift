@@ -3,6 +3,8 @@ import SwiftUI
 struct SleepTimelineView: View {
     let periods: [SleepViewModel.SleepPeriod]
     let targetHours: Double
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var totalMinutes: Int {
         periods.reduce(0) { total, period in
@@ -15,7 +17,7 @@ struct SleepTimelineView: View {
             HStack {
                 Image(systemName: "clock")
                     .foregroundStyle(.purple)
-                Text("Sleep Timeline")
+                Text(theme.sleepTimelineTitle)
                     .font(.headline)
                 Spacer()
                 Text(DateFormatting.formatMinutesToDuration(totalMinutes))
@@ -71,7 +73,7 @@ struct SleepTimelineView: View {
                 }
                 HStack(spacing: 4) {
                     Circle().fill(.purple).frame(width: 8, height: 8)
-                    Text("Night").font(.caption)
+                    Text(theme.sleepNightStat.capitalized).font(.caption)
                 }
                 Spacer()
                 Text("Target: \(String(format: "%.0f", targetHours))h")

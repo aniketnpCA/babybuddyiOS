@@ -10,6 +10,7 @@ struct SleepView: View {
     @State private var customEnd: Date = Date()
 
     private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         NavigationStack {
@@ -48,7 +49,7 @@ struct SleepView: View {
                         VStack(spacing: 4) {
                             Text("\(viewModel.todayNightSleep.count)")
                                 .font(.title.bold())
-                            Text("night")
+                            Text(theme.sleepNightStat)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -77,7 +78,7 @@ struct SleepView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("Sleep")
+            .navigationTitle(theme.sleepNavigationTitle)
             .overlay(alignment: .bottomTrailing) {
                 FloatingActionButton(color: .purple) {
                     showForm = true
@@ -120,7 +121,7 @@ struct SleepView: View {
         if viewModel.isLoadingToday {
             LoadingView()
         } else if viewModel.todaySleep.isEmpty {
-            EmptyStateView(icon: "moon", title: "No sleep recorded today", subtitle: "Tap + to log sleep")
+            EmptyStateView(icon: theme.sleepTabIcon, title: theme.sleepEmptyTitle, subtitle: theme.sleepEmptySubtitle)
         } else {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.todaySleep) { sleep in

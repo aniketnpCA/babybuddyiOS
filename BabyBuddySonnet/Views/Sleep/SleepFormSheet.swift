@@ -19,6 +19,8 @@ struct SleepFormSheet: View {
     }
 
     private var isEditing: Bool { editing != nil }
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         NavigationStack {
@@ -26,7 +28,7 @@ struct SleepFormSheet: View {
                 Section("Type") {
                     Picker("Sleep Type", selection: $isNap) {
                         Text("Nap").tag(true)
-                        Text("Night Sleep").tag(false)
+                        Text(theme.sleepNightLabel).tag(false)
                     }
                     .pickerStyle(.segmented)
                 }
@@ -44,7 +46,7 @@ struct SleepFormSheet: View {
                     }
                 }
             }
-            .navigationTitle(isEditing ? "Edit Sleep" : "Log Sleep")
+            .navigationTitle(isEditing ? theme.editSleepTitle : theme.logSleepTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

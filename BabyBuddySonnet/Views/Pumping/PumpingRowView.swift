@@ -2,6 +2,8 @@ import SwiftUI
 
 struct PumpingRowView: View {
     let pumping: Pumping
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -16,7 +18,7 @@ struct PumpingRowView: View {
                 HStack {
                     Text(String(format: "%.2f oz", pumping.amount))
                         .font(.subheadline.weight(.medium))
-                    Text(pumping.milkCategory.displayName)
+                    Text(theme.milkCategoryNames[pumping.milkCategory.rawValue] ?? pumping.milkCategory.displayName)
                         .font(.caption)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)

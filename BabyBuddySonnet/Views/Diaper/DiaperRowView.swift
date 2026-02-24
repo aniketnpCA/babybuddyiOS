@@ -2,6 +2,15 @@ import SwiftUI
 
 struct DiaperRowView: View {
     let change: DiaperChange
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
+
+    private var typeDescription: String {
+        if change.wet && change.solid { return theme.diaperBothDesc }
+        if change.wet { return theme.diaperWetDesc }
+        if change.solid { return theme.diaperSolidDesc }
+        return "Empty"
+    }
 
     var body: some View {
         HStack(spacing: 12) {
@@ -11,7 +20,7 @@ struct DiaperRowView: View {
                 .frame(width: 32)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(change.typeDescription)
+                Text(typeDescription)
                     .font(.subheadline.weight(.medium))
                 if change.solid, let stoolColor = change.stoolColor {
                     HStack(spacing: 4) {

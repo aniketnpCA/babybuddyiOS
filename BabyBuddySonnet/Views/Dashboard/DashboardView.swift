@@ -2,6 +2,8 @@ import SwiftUI
 
 struct DashboardView: View {
     let child: Child
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
     @State private var viewModel = DashboardViewModel()
     @State private var showFeedingForm = false
     @State private var showPumpingForm = false
@@ -55,7 +57,7 @@ struct DashboardView: View {
                         HStack {
                             Image(systemName: "clock")
                                 .foregroundStyle(.secondary)
-                            Text("Last feeding: \(DateFormatting.formatTime(lastFeeding))")
+                            Text("\(theme.dashboardLastFeedingLabel) \(DateFormatting.formatTime(lastFeeding))")
                                 .font(.subheadline)
                                 .foregroundStyle(.secondary)
                             Spacer()
@@ -67,7 +69,7 @@ struct DashboardView: View {
                     HStack {
                         Image(systemName: "moon.fill")
                             .foregroundStyle(.purple)
-                        Text("Sleep today: \(DateFormatting.formatMinutesToDuration(viewModel.todaySleepMinutes))")
+                        Text("\(theme.dashboardSleepTodayLabel) \(DateFormatting.formatMinutesToDuration(viewModel.todaySleepMinutes))")
                             .font(.subheadline)
                         Spacer()
                     }

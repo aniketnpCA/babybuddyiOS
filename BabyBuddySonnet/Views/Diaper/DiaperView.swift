@@ -2,6 +2,8 @@ import SwiftUI
 
 struct DiaperView: View {
     let childID: Int
+    private let settings = SettingsService.shared
+    private var theme: PetModeTheme { settings.theme }
     @State private var viewModel = DiaperViewModel()
     @State private var showForm = false
     @State private var selectedTab = 0
@@ -32,14 +34,14 @@ struct DiaperView: View {
                         VStack(spacing: 4) {
                             Text("\(viewModel.todayWetCount)")
                                 .font(.title.bold())
-                            Text("wet")
+                            Text(theme.diaperWetStat)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                         VStack(spacing: 4) {
                             Text("\(viewModel.todaySolidCount)")
                                 .font(.title.bold())
-                            Text("solid")
+                            Text(theme.diaperSolidStat)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -75,7 +77,7 @@ struct DiaperView: View {
                 }
                 .padding(.vertical)
             }
-            .navigationTitle("Diaper")
+            .navigationTitle(theme.diaperNavigationTitle)
             .overlay(alignment: .bottomTrailing) {
                 FloatingActionButton(color: .teal) {
                     showForm = true
@@ -118,7 +120,7 @@ struct DiaperView: View {
         if viewModel.isLoadingToday {
             LoadingView()
         } else if viewModel.todayChanges.isEmpty {
-            EmptyStateView(icon: "circle.dotted", title: "No changes today", subtitle: "Tap + to log a diaper change")
+            EmptyStateView(icon: theme.diaperTabIcon, title: theme.diaperEmptyTitle, subtitle: theme.diaperEmptySubtitle)
         } else {
             LazyVStack(spacing: 0) {
                 ForEach(viewModel.todayChanges) { change in
