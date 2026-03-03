@@ -223,11 +223,21 @@ nonisolated enum Calculations {
 
     static func groupByDate<T>(_ items: [T], dateExtractor: (T) -> String?) -> [(key: String, items: [T])] {
         var grouped: [String: [T]] = [:]
+        // We use a small local cache for the current groupByDate call to avoid re-parsing
+        // identical date strings (which is common in these datasets).
+        var keyCache: [String: String] = [:]
+
         for item in items {
-            guard let dateString = dateExtractor(item),
-                  let date = DateFormatting.parseISO(dateString)
-            else { continue }
+            guard let dateString = dateExtractor(item) else { continue }
+
+            if let cachedKey = keyCache[dateString] {
+                grouped[cachedKey, default: []].append(item)
+                continue
+            }
+
+            guard let date = DateFormatting.parseISO(dateString) else { continue }
             let key = DateFormatting.formatDateOnly(date)
+            keyCache[dateString] = key
             grouped[key, default: []].append(item)
         }
         return grouped.sorted { $0.key > $1.key }.map { (key: $0.key, items: $0.value) }

@@ -13,6 +13,23 @@ nonisolated enum DateFormatting {
         return f
     }()
 
+    // Faster alternatives to ISO8601DateFormatter for the most common formats
+    private static let fastISOFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSZ"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(secondsFromGMT: 0)
+        return f
+    }()
+
+    private static let fastISOFormatterNoFractional: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone(secondsFromGMT: 0)
+        return f
+    }()
+
     private static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "h:mm a"
@@ -41,7 +58,12 @@ nonisolated enum DateFormatting {
     // MARK: - Parsing
 
     static func parseISO(_ string: String) -> Date? {
-        isoFormatter.date(from: string) ?? isoFormatterNoFractional.date(from: string)
+        // Optimization: Try faster DateFormatter first for common ISO formats,
+        // fallback to ISO8601DateFormatter for flexibility.
+        if string.contains(".") {
+            return fastISOFormatter.date(from: string) ?? isoFormatter.date(from: string)
+        }
+        return fastISOFormatterNoFractional.date(from: string) ?? isoFormatterNoFractional.date(from: string)
     }
 
     static func parseDate(_ string: String) -> Date? {
