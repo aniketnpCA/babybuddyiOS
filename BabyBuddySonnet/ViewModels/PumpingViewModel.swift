@@ -79,7 +79,9 @@ final class PumpingViewModel {
                 .filter { DateFormatting.isToday($0.start) }
                 .sorted { $0.end > $1.end }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 
@@ -102,7 +104,9 @@ final class PumpingViewModel {
             )
             weekPumping = response.results.sorted { $0.end > $1.end }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 
@@ -144,7 +148,9 @@ final class PumpingViewModel {
             )
             customPumping = response.results.sorted { $0.end > $1.end }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 }

@@ -49,7 +49,9 @@ final class DiaperViewModel {
                 .filter { DateFormatting.isToday($0.time) }
                 .sorted { $0.time > $1.time }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 
@@ -72,7 +74,9 @@ final class DiaperViewModel {
             )
             weekChanges = response.results.sorted { $0.time > $1.time }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 
@@ -114,7 +118,9 @@ final class DiaperViewModel {
             )
             customChanges = response.results.sorted { $0.time > $1.time }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 }

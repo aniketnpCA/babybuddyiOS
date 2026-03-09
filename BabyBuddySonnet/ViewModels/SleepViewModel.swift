@@ -109,7 +109,9 @@ final class SleepViewModel {
                 .filter { DateFormatting.isToday($0.start) }
                 .sorted { $0.end > $1.end }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 
@@ -132,7 +134,9 @@ final class SleepViewModel {
             )
             weekSleep = response.results.sorted { $0.end > $1.end }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 
@@ -174,7 +178,9 @@ final class SleepViewModel {
             )
             customSleep = response.results.sorted { $0.end > $1.end }
         } catch {
-            self.error = error.localizedDescription
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
         }
     }
 }
