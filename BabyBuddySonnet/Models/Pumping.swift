@@ -6,7 +6,7 @@ nonisolated struct Pumping: Codable, Identifiable, Sendable {
     let start: String
     let end: String
     let duration: String?
-    let amount: Double
+    let amount: Double?
     let notes: String?
 
     var milkCategory: MilkCategory {

@@ -11,7 +11,7 @@ nonisolated enum Calculations {
     }
 
     static func calculateTotalPumped(_ pumpings: [Pumping]) -> Double {
-        pumpings.reduce(0) { $0 + $1.amount }
+        pumpings.reduce(0) { $0 + ($1.amount ?? 0) }
     }
 
     static func calculateDailySurplus(pumpings: [Pumping], feedings: [Feeding]) -> Double {

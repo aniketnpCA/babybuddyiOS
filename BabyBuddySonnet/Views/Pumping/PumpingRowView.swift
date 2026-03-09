@@ -16,7 +16,7 @@ struct PumpingRowView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
-                    Text(String(format: "%.2f oz", pumping.amount))
+                    Text(pumping.amount.map { String(format: "%.2f oz", $0) } ?? "— oz")
                         .font(.subheadline.weight(.medium))
                     Text(theme.milkCategoryNames[pumping.milkCategory.rawValue] ?? pumping.milkCategory.displayName)
                         .font(.caption)
