@@ -41,9 +41,9 @@ final class PumpingViewModel {
             let formatter = DateFormatter()
             formatter.dateFormat = "EEE"
 
-            let tbc = dayPumping.filter { $0.milkCategory == .toBeConsumed }.reduce(0.0) { $0 + $1.amount }
-            let consumed = dayPumping.filter { $0.milkCategory == .consumed }.reduce(0.0) { $0 + $1.amount }
-            let frozen = dayPumping.filter { $0.milkCategory == .frozen }.reduce(0.0) { $0 + $1.amount }
+            let tbc = dayPumping.filter { $0.milkCategory == .toBeConsumed }.reduce(0.0) { $0 + ($1.amount ?? 0) }
+            let consumed = dayPumping.filter { $0.milkCategory == .consumed }.reduce(0.0) { $0 + ($1.amount ?? 0) }
+            let frozen = dayPumping.filter { $0.milkCategory == .frozen }.reduce(0.0) { $0 + ($1.amount ?? 0) }
 
             data.append(DailyPumpingData(
                 id: dateKey,

@@ -11,12 +11,12 @@ struct ActiveTimersCard: View {
 
             ForEach(timers) { timer in
                 HStack(spacing: 10) {
-                    Image(systemName: iconForTimer(timer.name))
+                    Image(systemName: iconForTimer(timer.name ?? ""))
                         .font(.body)
-                        .foregroundStyle(colorForTimer(timer.name))
+                        .foregroundStyle(colorForTimer(timer.name ?? ""))
                         .frame(width: 24)
 
-                    Text(timer.name.isEmpty ? "Timer" : timer.name)
+                    Text(timer.name.map { $0.isEmpty ? "Timer" : $0 } ?? "Timer")
                         .font(.subheadline.weight(.medium))
 
                     Spacer()

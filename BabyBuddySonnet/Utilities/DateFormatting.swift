@@ -38,10 +38,20 @@ nonisolated enum DateFormatting {
         return f
     }()
 
+    // Fallback for microsecond precision (6 decimal places) that ISO8601DateFormatter can't handle
+    private static let microsecondsFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX"
+        f.locale = Locale(identifier: "en_US_POSIX")
+        return f
+    }()
+
     // MARK: - Parsing
 
     static func parseISO(_ string: String) -> Date? {
-        isoFormatter.date(from: string) ?? isoFormatterNoFractional.date(from: string)
+        isoFormatter.date(from: string)
+            ?? isoFormatterNoFractional.date(from: string)
+            ?? microsecondsFormatter.date(from: string)
     }
 
     static func parseDate(_ string: String) -> Date? {

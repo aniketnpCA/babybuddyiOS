@@ -78,7 +78,7 @@ struct PumpingFormSheet: View {
 
     private func prefillIfEditing() {
         guard let pumping = editing else { return }
-        amount = pumping.amount
+        amount = pumping.amount ?? 3.0
         category = pumping.milkCategory
         if let s = DateFormatting.parseISO(pumping.start) { startTime = s }
         if let e = DateFormatting.parseISO(pumping.end) { endTime = e }

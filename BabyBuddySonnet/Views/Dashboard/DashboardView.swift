@@ -14,71 +14,69 @@ struct DashboardView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    if let error = viewModel.error {
-                        ErrorBannerView(message: error) {
-                            viewModel.error = nil
+                        if let error = viewModel.error {
+                            ErrorBannerView(message: error) {
+                                viewModel.error = nil
+                            }
                         }
-                    }
 
-                    ChildProfileCard(child: child)
-                        .padding(.horizontal)
-
-                    if !viewModel.activeTimers.isEmpty {
-                        ActiveTimersCard(timers: viewModel.activeTimers)
+                        ChildProfileCard(child: child)
                             .padding(.horizontal)
-                    }
 
-                    QuickActionsGrid(
-                        showFeedingForm: $showFeedingForm,
-                        showPumpingForm: $showPumpingForm,
-                        showSleepForm: $showSleepForm,
-                        showDiaperForm: $showDiaperForm
-                    )
-                    .padding(.horizontal)
+                        if !viewModel.activeTimers.isEmpty {
+                            ActiveTimersCard(timers: viewModel.activeTimers)
+                                .padding(.horizontal)
+                        }
 
-                    NextExpectedCard(
-                        nextFeedingTime: viewModel.nextFeedingTime,
-                        nextPumpingTime: viewModel.nextPumpingTime,
-                        nextDiaperTime: viewModel.nextDiaperTime
-                    )
-                    .padding(.horizontal)
-
-                    FeedingProgressCard(chartData: viewModel.cumulativeChartData)
+                        NextExpectedCard(
+                            nextFeedingTime: viewModel.nextFeedingTime,
+                            nextPumpingTime: viewModel.nextPumpingTime,
+                            nextDiaperTime: viewModel.nextDiaperTime
+                        )
                         .padding(.horizontal)
 
-                    DailySurplusCard(
-                        pumpedOz: viewModel.todayPumpedOz,
-                        consumedOz: viewModel.todayConsumedOz
-                    )
-                    .padding(.horizontal)
+                        FeedingProgressCard(chartData: viewModel.cumulativeChartData)
+                            .padding(.horizontal)
 
-                    // Last activity
-                    if let lastFeeding = viewModel.lastFeedingTime {
+                        DailySurplusCard(
+                            pumpedOz: viewModel.todayPumpedOz,
+                            consumedOz: viewModel.todayConsumedOz
+                        )
+                        .padding(.horizontal)
+
+                        // Last activity
+                        if let lastFeeding = viewModel.lastFeedingTime {
+                            HStack {
+                                Image(systemName: "clock")
+                                    .foregroundStyle(.secondary)
+                                Text("\(theme.dashboardLastFeedingLabel) \(DateFormatting.formatTime(lastFeeding))")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                        }
+
+                        // Sleep summary
                         HStack {
-                            Image(systemName: "clock")
-                                .foregroundStyle(.secondary)
-                            Text("\(theme.dashboardLastFeedingLabel) \(DateFormatting.formatTime(lastFeeding))")
+                            Image(systemName: "moon.fill")
+                                .foregroundStyle(.purple)
+                            Text("\(theme.dashboardSleepTodayLabel) \(DateFormatting.formatMinutesToDuration(viewModel.todaySleepMinutes))")
                                 .font(.subheadline)
-                                .foregroundStyle(.secondary)
                             Spacer()
                         }
+                        .padding()
+                        .background(.regularMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 16))
                         .padding(.horizontal)
-                    }
 
-                    // Sleep summary
-                    HStack {
-                        Image(systemName: "moon.fill")
-                            .foregroundStyle(.purple)
-                        Text("\(theme.dashboardSleepTodayLabel) \(DateFormatting.formatMinutesToDuration(viewModel.todaySleepMinutes))")
-                            .font(.subheadline)
-                        Spacer()
+                        // Bottom spacer so content doesn't hide behind FAB
+                        Spacer().frame(height: 60)
                     }
-                    .padding()
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
-                    .padding(.horizontal)
-                }
-                .padding(.vertical)
+                    .padding(.vertical)
+            }
+            .overlay(alignment: .bottomTrailing) {
+                ExpandableFloatingActionButton(items: fabItems)
             }
             .navigationTitle("Dashboard")
             .toolbar {
@@ -123,5 +121,22 @@ struct DashboardView: View {
                 }
             }
         }
+    }
+
+    private var fabItems: [FABItem] {
+        [
+            FABItem(label: theme.quickActionFeedingLabel, icon: theme.feedingTabIcon, color: .blue) {
+                showFeedingForm = true
+            },
+            FABItem(label: theme.quickActionPumpingLabel, icon: theme.pumpingTabIcon, color: .orange) {
+                showPumpingForm = true
+            },
+            FABItem(label: theme.quickActionSleepLabel, icon: theme.sleepTabIcon, color: .purple) {
+                showSleepForm = true
+            },
+            FABItem(label: theme.quickActionDiaperLabel, icon: theme.diaperTabIcon, color: .teal) {
+                showDiaperForm = true
+            },
+        ]
     }
 }
