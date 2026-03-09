@@ -136,6 +136,22 @@ actor APIClient {
         try validateResponse(response)
         do {
             return try decoder.decode(T.self, from: data)
+        } catch let decodingError as DecodingError {
+            let detail: String
+            switch decodingError {
+            case .keyNotFound(let key, let ctx):
+                detail = "keyNotFound '\(key.stringValue)' at \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+            case .valueNotFound(let type, let ctx):
+                detail = "valueNotFound \(type) at \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+            case .typeMismatch(let type, let ctx):
+                detail = "typeMismatch \(type) at \(ctx.codingPath.map(\.stringValue).joined(separator: "."))"
+            case .dataCorrupted(let ctx):
+                detail = "dataCorrupted: \(ctx.debugDescription)"
+            @unknown default:
+                detail = decodingError.localizedDescription
+            }
+            print("[APIClient] DecodingError for \(T.self): \(detail)")
+            throw APIError.decodingError(decodingError)
         } catch {
             throw APIError.decodingError(error)
         }
