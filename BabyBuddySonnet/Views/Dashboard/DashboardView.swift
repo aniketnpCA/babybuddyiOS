@@ -12,9 +12,8 @@ struct DashboardView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                ScrollView {
-                    VStack(spacing: 16) {
+            ScrollView {
+                VStack(spacing: 16) {
                         if let error = viewModel.error {
                             ErrorBannerView(message: error) {
                                 viewModel.error = nil
@@ -75,8 +74,8 @@ struct DashboardView: View {
                         Spacer().frame(height: 60)
                     }
                     .padding(.vertical)
-                }
-
+            }
+            .overlay(alignment: .bottomTrailing) {
                 ExpandableFloatingActionButton(items: fabItems)
             }
             .navigationTitle("Dashboard")
