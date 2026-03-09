@@ -11,6 +11,7 @@ struct FeedingFormSheet: View {
     @State private var amount: Double = 3.0
     @State private var startTime: Date = Date().addingTimeInterval(-900)
     @State private var endTime: Date = Date()
+    @State private var notes: String = ""
     @State private var isSaving = false
     @State private var error: String?
 
@@ -56,6 +57,11 @@ struct FeedingFormSheet: View {
                     DateTimePickerRow(label: "End", date: $endTime)
                 }
 
+                Section("Notes") {
+                    TextField("Optional notes", text: $notes, axis: .vertical)
+                        .lineLimit(1...4)
+                }
+
                 if let error {
                     Section {
                         Text(error)
@@ -94,6 +100,7 @@ struct FeedingFormSheet: View {
         amount = feeding.amount ?? 3.0
         if let s = DateFormatting.parseISO(feeding.start) { startTime = s }
         if let e = DateFormatting.parseISO(feeding.end) { endTime = e }
+        notes = feeding.notes ?? ""
     }
 
     private func save() async {
@@ -109,7 +116,7 @@ struct FeedingFormSheet: View {
                     type: feedingType.rawValue,
                     method: feedingMethod.rawValue,
                     amount: feedingMethod == .bottle ? amount : nil,
-                    notes: nil
+                    notes: notes.isEmpty ? nil : notes
                 )
                 let _: Feeding = try await APIClient.shared.patch(
                     path: APIEndpoints.feeding(feeding.id),
@@ -123,7 +130,7 @@ struct FeedingFormSheet: View {
                     type: feedingType.rawValue,
                     method: feedingMethod.rawValue,
                     amount: feedingMethod == .bottle ? amount : nil,
-                    notes: nil
+                    notes: notes.isEmpty ? nil : notes
                 )
                 let _: Feeding = try await APIClient.shared.post(
                     path: APIEndpoints.feedings,
