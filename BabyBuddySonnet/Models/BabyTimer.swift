@@ -7,6 +7,6 @@ nonisolated struct BabyTimer: Codable, Identifiable, Sendable {
     let start: String
     let end: String?
     let duration: String?
-    let active: Bool
+    let active: Bool?
     let user: Int
 }
