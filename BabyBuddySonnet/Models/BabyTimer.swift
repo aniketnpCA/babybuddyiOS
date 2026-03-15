@@ -10,3 +10,14 @@ nonisolated struct BabyTimer: Codable, Identifiable, Sendable {
     let active: Bool?
     let user: Int
 }
+
+nonisolated struct CreateTimerInput: Codable, Sendable {
+    let child: Int
+    let name: String?
+    let start: String
+}
+
+nonisolated struct StopTimerInput: Codable, Sendable {
+    let end: String
+    let active: Bool
+}

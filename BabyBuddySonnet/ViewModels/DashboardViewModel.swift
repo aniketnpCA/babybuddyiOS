@@ -30,11 +30,14 @@ final class DashboardViewModel {
     var weightMeasurements: [WeightMeasurement] = []
     var heightMeasurements: [HeightMeasurement] = []
     var headCircumferenceMeasurements: [HeadCircumferenceMeasurement] = []
+    var bmiMeasurements: [BMIMeasurement] = []
     var recentFeedings: [Feeding] = []
     var recentPumping: [Pumping] = []
     var recentSleep: [SleepRecord] = []
     var recentDiaperChanges: [DiaperChange] = []
     var weekPumping: [Pumping] = []
+    var recentTummyTimes: [TummyTime] = []
+    var recentTemperatures: [Temperature] = []
 
     // MARK: - Next Expected Times
 
@@ -63,6 +66,52 @@ final class DashboardViewModel {
     }
 
     private let settings = SettingsService.shared
+
+    // MARK: - Timer Management
+
+    func startTimer(childID: Int, name: String?) async {
+        do {
+            let input = CreateTimerInput(
+                child: childID,
+                name: name,
+                start: DateFormatting.formatForAPI(Date())
+            )
+            let timer: BabyTimer = try await APIClient.shared.post(
+                path: APIEndpoints.timers,
+                body: input
+            )
+            activeTimers.append(timer)
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
+
+    func stopTimer(_ timer: BabyTimer) async -> BabyTimer? {
+        do {
+            let input = StopTimerInput(
+                end: DateFormatting.formatForAPI(Date()),
+                active: false
+            )
+            let stopped: BabyTimer = try await APIClient.shared.patch(
+                path: APIEndpoints.timer(timer.id),
+                body: input
+            )
+            activeTimers.removeAll { $0.id == timer.id }
+            return stopped
+        } catch {
+            self.error = error.localizedDescription
+            return nil
+        }
+    }
+
+    func deleteTimer(_ timer: BabyTimer) async {
+        do {
+            try await APIClient.shared.delete(path: APIEndpoints.timer(timer.id))
+            activeTimers.removeAll { $0.id == timer.id }
+        } catch {
+            self.error = error.localizedDescription
+        }
+    }
 
     // MARK: - Cumulative Chart Data
 
@@ -293,6 +342,97 @@ final class DashboardViewModel {
         return data
     }
 
+    // MARK: - New Analytics Widget Computed Properties
+
+    var dailyFeedingByType: [(date: String, breastMilk: Double, formula: Double, fortified: Double)] {
+        let grouped = Calculations.groupByDate(recentFeedings) { $0.start }
+        return grouped.map { dateStr, feedings in
+            let bottleFeedings = feedings.filter { $0.method == FeedingMethod.bottle.rawValue }
+            let bm = bottleFeedings.filter { $0.type == FeedingType.breastMilk.rawValue }
+                .reduce(0.0) { $0 + ($1.amount ?? 0) }
+            let fm = bottleFeedings.filter { $0.type == FeedingType.formula.rawValue }
+                .reduce(0.0) { $0 + ($1.amount ?? 0) }
+            let ft = bottleFeedings.filter { $0.type == FeedingType.fortifiedBreastMilk.rawValue }
+                .reduce(0.0) { $0 + ($1.amount ?? 0) }
+            return (date: dateStr, breastMilk: bm, formula: fm, fortified: ft)
+        }.sorted { $0.date < $1.date }
+    }
+
+    var dailyFeedingDurations: [(date: String, avgMinutes: Double, count: Int)] {
+        let grouped = Calculations.groupByDate(recentFeedings) { $0.start }
+        return grouped.compactMap { dateStr, feedings in
+            let durations: [Double] = feedings.compactMap { f in
+                guard let s = DateFormatting.parseISO(f.start),
+                      let e = DateFormatting.parseISO(f.end) else { return nil }
+                return e.timeIntervalSince(s) / 60
+            }
+            guard !durations.isEmpty else { return nil }
+            let avg = durations.reduce(0, +) / Double(durations.count)
+            return (date: dateStr, avgMinutes: avg, count: feedings.count)
+        }.sorted { $0.date < $1.date }
+    }
+
+    var dailyFeedingIntervals: [(date: String, avgHours: Double)] {
+        let grouped = Calculations.groupByDate(recentFeedings) { $0.start }
+        return grouped.compactMap { dateStr, feedings in
+            let times = feedings.compactMap { DateFormatting.parseISO($0.start) }.sorted()
+            guard times.count > 1 else { return nil }
+            var totalHours = 0.0
+            for i in 1..<times.count {
+                totalHours += times[i].timeIntervalSince(times[i - 1]) / 3600
+            }
+            return (date: dateStr, avgHours: totalHours / Double(times.count - 1))
+        }.sorted { $0.date < $1.date }
+    }
+
+    var feedingScatterPoints: [(date: Date, hourOfDay: Double, type: String)] {
+        recentFeedings.compactMap { f in
+            guard let date = DateFormatting.parseISO(f.start) else { return nil }
+            let cal = Calendar.current
+            let hour = Double(cal.component(.hour, from: date)) +
+                       Double(cal.component(.minute, from: date)) / 60.0
+            return (date: date, hourOfDay: hour, type: f.type)
+        }
+    }
+
+    var dailySleepTotals: [(date: String, hours: Double)] {
+        let grouped = Calculations.groupByDate(recentSleep) { $0.start }
+        return grouped.map { dateStr, sleeps in
+            let minutes = Calculations.calculateTotalSleepMinutes(sleeps)
+            return (date: dateStr, hours: Double(minutes) / 60.0)
+        }.sorted { $0.date < $1.date }
+    }
+
+    var diaperIntervals: [(date: Date, hours: Double)] {
+        let sorted = recentDiaperChanges.compactMap { DateFormatting.parseISO($0.time) }.sorted()
+        var results: [(date: Date, hours: Double)] = []
+        for i in 1..<sorted.count {
+            let hours = sorted[i].timeIntervalSince(sorted[i - 1]) / 3600
+            results.append((date: sorted[i], hours: hours))
+        }
+        return results
+    }
+
+    var dailyTummyTimeMinutes: [(date: String, minutes: Double)] {
+        let grouped = Calculations.groupByDate(recentTummyTimes) { $0.start }
+        return grouped.map { dateStr, tummyTimes in
+            let minutes = tummyTimes.compactMap { tt -> Double? in
+                guard let start = DateFormatting.parseISO(tt.start),
+                      let end = DateFormatting.parseISO(tt.end)
+                else { return nil }
+                return end.timeIntervalSince(start) / 60
+            }.reduce(0, +)
+            return (date: dateStr, minutes: minutes)
+        }.sorted { $0.date < $1.date }
+    }
+
+    var temperaturePoints: [(date: Date, value: Double)] {
+        recentTemperatures.compactMap { temp in
+            guard let date = DateFormatting.parseISO(temp.time) else { return nil }
+            return (date: date, value: temp.temperature)
+        }.sorted { $0.date < $1.date }
+    }
+
     // MARK: - Load
 
     func loadDashboard(childID: Int, childName: String? = nil, birthDate: String? = nil) async {
@@ -472,12 +612,14 @@ final class DashboardViewModel {
         let tomorrow = DateFormatting.formatDateOnly(DateFormatting.tomorrow())
         let sevenDaysAgo = DateFormatting.formatDateOnly(DateFormatting.sevenDaysAgo())
 
-        let needsGrowth = enabledWidgets.contains(.growthChart)
-        let needs30DayFeedings = enabledWidgets.contains(.dailyTrendChart) || enabledWidgets.contains(.feedingHeatmapChart) || enabledWidgets.contains(.monthlyComparison)
-        let needs30DayPumping = enabledWidgets.contains(.dailyTrendChart) || enabledWidgets.contains(.monthlyComparison)
-        let needsSleep = enabledWidgets.contains(.sleepPatternChart) || enabledWidgets.contains(.monthlyComparison)
-        let needsDiapers = enabledWidgets.contains(.diaperFrequencyChart) || enabledWidgets.contains(.monthlyComparison)
+        let needsGrowth = enabledWidgets.contains(.growthChart) || enabledWidgets.contains(.bmiChart)
+        let needs30DayFeedings = enabledWidgets.contains(.dailyTrendChart) || enabledWidgets.contains(.feedingHeatmapChart) || enabledWidgets.contains(.monthlyComparison) || enabledWidgets.contains(.feedingByTypeChart) || enabledWidgets.contains(.feedingPatternChart) || enabledWidgets.contains(.feedingDurationsChart) || enabledWidgets.contains(.feedingIntervalsChart)
+        let needs30DayPumping = enabledWidgets.contains(.dailyTrendChart) || enabledWidgets.contains(.monthlyComparison) || enabledWidgets.contains(.pumpingAmountsChart)
+        let needsSleep = enabledWidgets.contains(.sleepPatternChart) || enabledWidgets.contains(.monthlyComparison) || enabledWidgets.contains(.sleepTotalsChart)
+        let needsDiapers = enabledWidgets.contains(.diaperFrequencyChart) || enabledWidgets.contains(.monthlyComparison) || enabledWidgets.contains(.diaperIntervalsChart) || enabledWidgets.contains(.diaperLifetimesChart)
         let needsWeekPumping = enabledWidgets.contains(.pumpingWeeklyChart)
+        let needsTummyTime = enabledWidgets.contains(.tummyTimeChart)
+        let needsTemperature = enabledWidgets.contains(.temperatureChart)
 
         do {
             if needsGrowth {
@@ -573,6 +715,44 @@ final class DashboardViewModel {
                     ]
                 )
                 weekPumping = resp.results.sorted { $0.start < $1.start }
+            }
+
+            if needsGrowth, enabledWidgets.contains(.bmiChart) {
+                let resp: PaginatedResponse<BMIMeasurement> = try await APIClient.shared.get(
+                    path: APIEndpoints.bmi,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "ordering", value: "date"),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                bmiMeasurements = resp.results.sorted { $0.date < $1.date }
+            }
+
+            if needsTummyTime {
+                let resp: PaginatedResponse<TummyTime> = try await APIClient.shared.get(
+                    path: APIEndpoints.tummyTimes,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "start_min", value: thirtyDaysAgo),
+                        URLQueryItem(name: "start_max", value: tomorrow),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                recentTummyTimes = resp.results
+            }
+
+            if needsTemperature {
+                let resp: PaginatedResponse<Temperature> = try await APIClient.shared.get(
+                    path: APIEndpoints.temperatures,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "time_min", value: thirtyDaysAgo),
+                        URLQueryItem(name: "time_max", value: tomorrow),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                recentTemperatures = resp.results
             }
         } catch {
             // Widget data is supplementary; don't fail the whole dashboard

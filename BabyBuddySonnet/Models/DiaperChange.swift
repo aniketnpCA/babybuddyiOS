@@ -40,6 +40,7 @@ nonisolated struct CreateDiaperChangeInput: Codable, Sendable {
     let wet: Bool
     let solid: Bool
     let color: String?
+    let amount: Double?
     let notes: String?
 }
 
@@ -48,5 +49,6 @@ nonisolated struct UpdateDiaperChangeInput: Codable, Sendable {
     let wet: Bool?
     let solid: Bool?
     let color: String?
+    let amount: Double?
     let notes: String?
 }

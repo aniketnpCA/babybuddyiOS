@@ -16,10 +16,12 @@ struct DailyTrendChart: View {
         var points: [TrendPoint] = []
 
         // Feeding data with 7-day moving average
-        let feedingWithMA = movingAverage(dailyFeedingOz, window: 7)
-        for item in feedingWithMA {
+        let feedingMA = Calculations.movingAverage(
+            dailyFeedingOz.map { (date: $0.date, value: $0.oz) }, window: 7
+        )
+        for item in feedingMA {
             if let date = DateFormatting.parseDate(item.date) {
-                points.append(TrendPoint(date: date, value: item.oz, series: "Feeding"))
+                points.append(TrendPoint(date: date, value: item.value, series: "Feeding"))
                 if let ma = item.ma {
                     points.append(TrendPoint(date: date, value: ma, series: "Feeding Avg"))
                 }
@@ -27,10 +29,12 @@ struct DailyTrendChart: View {
         }
 
         // Pumping data with 7-day moving average
-        let pumpingWithMA = movingAverage(dailyPumpingOz, window: 7)
-        for item in pumpingWithMA {
+        let pumpingMA = Calculations.movingAverage(
+            dailyPumpingOz.map { (date: $0.date, value: $0.oz) }, window: 7
+        )
+        for item in pumpingMA {
             if let date = DateFormatting.parseDate(item.date) {
-                points.append(TrendPoint(date: date, value: item.oz, series: "Pumping"))
+                points.append(TrendPoint(date: date, value: item.value, series: "Pumping"))
                 if let ma = item.ma {
                     points.append(TrendPoint(date: date, value: ma, series: "Pumping Avg"))
                 }
@@ -104,22 +108,4 @@ struct DailyTrendChart: View {
         .clipShape(RoundedRectangle(cornerRadius: 16))
     }
 
-    // MARK: - Moving Average
-
-    private struct MAPoint {
-        let date: String
-        let oz: Double
-        let ma: Double?
-    }
-
-    private func movingAverage(_ data: [(date: String, oz: Double)], window: Int) -> [MAPoint] {
-        data.enumerated().map { index, item in
-            let start = max(0, index - window + 1)
-            let slice = data[start...index]
-            let avg = slice.count >= window
-                ? slice.reduce(0.0) { $0 + $1.oz } / Double(slice.count)
-                : nil
-            return MAPoint(date: item.date, oz: item.oz, ma: avg)
-        }
-    }
 }

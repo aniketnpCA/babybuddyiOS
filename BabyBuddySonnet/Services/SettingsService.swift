@@ -29,6 +29,9 @@ final class SettingsService {
     // Dog Mode cache — required so @Observable can track changes
     private var _isDogMode: Bool = false
 
+    // Child sex cache — for WHO growth chart percentile selection
+    private var _childSex: String = ""
+
     // MARK: - Feeding Settings
 
     var feedingTargetAmount: Double {
@@ -209,6 +212,14 @@ final class SettingsService {
 
     var theme: PetModeTheme { isDogMode ? .dog : .baby }
 
+    // MARK: - Child Profile
+
+    /// Child's sex for WHO growth chart percentile selection ("M", "F", or "" for unset)
+    var childSex: String {
+        get { _childSex }
+        set { _childSex = newValue; store.set(newValue, forKey: Keys.childSex); store.synchronize() }
+    }
+
     // MARK: - Init
 
     private init() {
@@ -237,6 +248,7 @@ final class SettingsService {
             _dashboardWidgets = []
         }
         _isDogMode = store.bool(forKey: Keys.isDogMode)
+        _childSex = store.string(forKey: Keys.childSex) ?? ""
         NotificationCenter.default.addObserver(
             forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
             object: store,
@@ -258,6 +270,7 @@ final class SettingsService {
             self._dashboardWidgets = (self.store.array(forKey: Keys.dashboardWidgets) as? [String]) ?? []
             UserDefaults.standard.set(self._dashboardWidgets, forKey: Keys.dashboardWidgets)
             self._isDogMode = self.store.bool(forKey: Keys.isDogMode)
+            self._childSex = self.store.string(forKey: Keys.childSex) ?? ""
         }
     }
 
@@ -293,6 +306,9 @@ final class SettingsService {
 
         // Reset appearance
         isDogMode = false
+
+        // Reset child profile
+        childSex = ""
     }
 
     // MARK: - Private Key Helpers
@@ -330,5 +346,6 @@ final class SettingsService {
         static let tabOrder = "tabOrder"
         static let isDogMode = "isDogMode"
         static let dashboardWidgets = "dashboardWidgets"
+        static let childSex = "childSex"
     }
 }

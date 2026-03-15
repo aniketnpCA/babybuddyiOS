@@ -7,12 +7,15 @@ final class AnalyticsViewModel {
     var weightMeasurements: [WeightMeasurement] = []
     var heightMeasurements: [HeightMeasurement] = []
     var headCircumferenceMeasurements: [HeadCircumferenceMeasurement] = []
+    var bmiMeasurements: [BMIMeasurement] = []
 
     // Activity data (30 days for trends)
     var recentFeedings: [Feeding] = []
     var recentSleep: [SleepRecord] = []
     var recentDiaperChanges: [DiaperChange] = []
     var recentPumping: [Pumping] = []
+    var recentTummyTimes: [TummyTime] = []
+    var recentTemperatures: [Temperature] = []
 
     // State
     var isLoading = false
@@ -101,6 +104,35 @@ final class AnalyticsViewModel {
                 ]
             )
 
+            async let bmiResponse: PaginatedResponse<BMIMeasurement> = APIClient.shared.get(
+                path: APIEndpoints.bmi,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "ordering", value: "date"),
+                    URLQueryItem(name: "limit", value: "1000"),
+                ]
+            )
+
+            async let tummyTimeResponse: PaginatedResponse<TummyTime> = APIClient.shared.get(
+                path: APIEndpoints.tummyTimes,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "start_min", value: thirtyDaysAgo),
+                    URLQueryItem(name: "start_max", value: tomorrow),
+                    URLQueryItem(name: "limit", value: "1000"),
+                ]
+            )
+
+            async let temperatureResponse: PaginatedResponse<Temperature> = APIClient.shared.get(
+                path: APIEndpoints.temperatures,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "time_min", value: thirtyDaysAgo),
+                    URLQueryItem(name: "time_max", value: tomorrow),
+                    URLQueryItem(name: "limit", value: "1000"),
+                ]
+            )
+
             weightMeasurements = try await weightResponse.results.sorted { $0.date < $1.date }
             heightMeasurements = try await heightResponse.results.sorted { $0.date < $1.date }
             headCircumferenceMeasurements = try await headResponse.results.sorted { $0.date < $1.date }
@@ -108,6 +140,23 @@ final class AnalyticsViewModel {
             recentSleep = try await sleepResponse.results.sorted { $0.start < $1.start }
             recentDiaperChanges = try await diaperResponse.results.sorted { $0.time < $1.time }
             recentPumping = try await pumpingResponse.results.sorted { $0.start < $1.start }
+
+            // These endpoints may not exist on older server versions
+            do {
+                bmiMeasurements = try await bmiResponse.results.sorted { $0.date < $1.date }
+            } catch {
+                bmiMeasurements = []
+            }
+            do {
+                recentTummyTimes = try await tummyTimeResponse.results.sorted { $0.start < $1.start }
+            } catch {
+                recentTummyTimes = []
+            }
+            do {
+                recentTemperatures = try await temperatureResponse.results.sorted { $0.time < $1.time }
+            } catch {
+                recentTemperatures = []
+            }
 
         } catch {
             self.error = error.localizedDescription
@@ -150,6 +199,55 @@ final class AnalyticsViewModel {
         let _: HeadCircumferenceMeasurement = try await APIClient.shared.post(
             path: APIEndpoints.headCircumference, body: input
         )
+    }
+
+    // MARK: - Update Growth Measurements
+
+    func updateWeight(id: Int, weightGrams: Double, date: Date, notes: String?) async throws {
+        let input = UpdateWeightInput(
+            weight: weightGrams,
+            date: DateFormatting.formatDateOnly(date),
+            notes: notes
+        )
+        let _: WeightMeasurement = try await APIClient.shared.patch(
+            path: APIEndpoints.weight(id), body: input
+        )
+    }
+
+    func updateHeight(id: Int, heightCm: Double, date: Date, notes: String?) async throws {
+        let input = UpdateHeightInput(
+            height: heightCm,
+            date: DateFormatting.formatDateOnly(date),
+            notes: notes
+        )
+        let _: HeightMeasurement = try await APIClient.shared.patch(
+            path: APIEndpoints.height(id), body: input
+        )
+    }
+
+    func updateHeadCircumference(id: Int, headCircumferenceCm: Double, date: Date, notes: String?) async throws {
+        let input = UpdateHeadCircumferenceInput(
+            headCircumference: headCircumferenceCm,
+            date: DateFormatting.formatDateOnly(date),
+            notes: notes
+        )
+        let _: HeadCircumferenceMeasurement = try await APIClient.shared.patch(
+            path: APIEndpoints.headCircumference(id), body: input
+        )
+    }
+
+    // MARK: - Delete Growth Measurements
+
+    func deleteWeight(id: Int) async throws {
+        try await APIClient.shared.delete(path: APIEndpoints.weight(id))
+    }
+
+    func deleteHeight(id: Int) async throws {
+        try await APIClient.shared.delete(path: APIEndpoints.height(id))
+    }
+
+    func deleteHeadCircumference(id: Int) async throws {
+        try await APIClient.shared.delete(path: APIEndpoints.headCircumference(id))
     }
 
     // MARK: - Computed Chart Data
@@ -226,6 +324,85 @@ final class AnalyticsViewModel {
         return blocks
     }
 
+    // MARK: - New Chart Data
+
+    /// Time between consecutive diaper changes (hours)
+    var diaperIntervals: [(date: Date, hours: Double)] {
+        let sorted = recentDiaperChanges.sorted { $0.time < $1.time }
+        var results: [(date: Date, hours: Double)] = []
+        for i in 1..<sorted.count {
+            guard let prev = DateFormatting.parseISO(sorted[i - 1].time),
+                  let curr = DateFormatting.parseISO(sorted[i].time) else { continue }
+            let hours = curr.timeIntervalSince(prev) / 3600
+            if hours < 24 { results.append((date: curr, hours: hours)) }
+        }
+        return results
+    }
+
+    /// Daily feeding oz split by type (bottle-method only)
+    var dailyFeedingByType: [(date: String, breastMilk: Double, formula: Double, fortified: Double)] {
+        let grouped = Calculations.groupByDate(recentFeedings) { $0.start }
+        return grouped.map { dateStr, feedings in
+            let bottleFeedings = feedings.filter { $0.method == FeedingMethod.bottle.rawValue }
+            let bm = bottleFeedings.filter { $0.type == FeedingType.breastMilk.rawValue }
+                .reduce(0.0) { $0 + ($1.amount ?? 0) }
+            let fm = bottleFeedings.filter { $0.type == FeedingType.formula.rawValue }
+                .reduce(0.0) { $0 + ($1.amount ?? 0) }
+            let ft = bottleFeedings.filter { $0.type == FeedingType.fortifiedBreastMilk.rawValue }
+                .reduce(0.0) { $0 + ($1.amount ?? 0) }
+            return (date: dateStr, breastMilk: bm, formula: fm, fortified: ft)
+        }.sorted { $0.date < $1.date }
+    }
+
+    /// Average feeding duration (minutes) and count per day
+    var dailyFeedingDurations: [(date: String, avgMinutes: Double, count: Int)] {
+        let grouped = Calculations.groupByDate(recentFeedings) { $0.start }
+        return grouped.compactMap { dateStr, feedings in
+            let durations: [Double] = feedings.compactMap { f in
+                guard let s = DateFormatting.parseISO(f.start),
+                      let e = DateFormatting.parseISO(f.end) else { return nil }
+                return e.timeIntervalSince(s) / 60
+            }
+            guard !durations.isEmpty else { return nil }
+            let avg = durations.reduce(0, +) / Double(durations.count)
+            return (date: dateStr, avgMinutes: avg, count: feedings.count)
+        }.sorted { $0.date < $1.date }
+    }
+
+    /// Average hours between feedings per day
+    var dailyFeedingIntervals: [(date: String, avgHours: Double)] {
+        let grouped = Calculations.groupByDate(recentFeedings) { $0.start }
+        return grouped.compactMap { dateStr, feedings in
+            let times = feedings.compactMap { DateFormatting.parseISO($0.start) }.sorted()
+            guard times.count > 1 else { return nil }
+            var totalHours = 0.0
+            for i in 1..<times.count {
+                totalHours += times[i].timeIntervalSince(times[i - 1]) / 3600
+            }
+            return (date: dateStr, avgHours: totalHours / Double(times.count - 1))
+        }.sorted { $0.date < $1.date }
+    }
+
+    /// Each feeding as a scatter point (date, time of day, type)
+    var feedingScatterPoints: [(date: Date, hourOfDay: Double, type: String)] {
+        recentFeedings.compactMap { f in
+            guard let date = DateFormatting.parseISO(f.start) else { return nil }
+            let cal = Calendar.current
+            let hour = Double(cal.component(.hour, from: date)) +
+                       Double(cal.component(.minute, from: date)) / 60.0
+            return (date: date, hourOfDay: hour, type: f.type)
+        }
+    }
+
+    /// Total sleep hours per day
+    var dailySleepTotals: [(date: String, hours: Double)] {
+        let grouped = Calculations.groupByDate(recentSleep) { $0.start }
+        return grouped.map { dateStr, sleeps in
+            let minutes = Calculations.calculateTotalSleepMinutes(sleeps)
+            return (date: dateStr, hours: Double(minutes) / 60.0)
+        }.sorted { $0.date < $1.date }
+    }
+
     /// Monthly comparison data
     var monthlyComparison: MonthlyComparison? {
         let cal = Calendar.current
@@ -283,6 +460,28 @@ final class AnalyticsViewModel {
             totalPumpedThisMonth: Calculations.calculateTotalPumped(thisMonthPumping),
             totalPumpedLastMonth: Calculations.calculateTotalPumped(lastMonthPumping)
         )
+    }
+
+    /// Daily tummy time minutes for chart
+    var dailyTummyTimeMinutes: [(date: String, minutes: Double)] {
+        let grouped = Calculations.groupByDate(recentTummyTimes) { $0.start }
+        return grouped.map { dateStr, tummyTimes in
+            let minutes = tummyTimes.compactMap { tt -> Double? in
+                guard let start = DateFormatting.parseISO(tt.start),
+                      let end = DateFormatting.parseISO(tt.end)
+                else { return nil }
+                return end.timeIntervalSince(start) / 60
+            }.reduce(0, +)
+            return (date: dateStr, minutes: minutes)
+        }.sorted { $0.date < $1.date }
+    }
+
+    /// Temperature readings as chart-ready (date, value) tuples
+    var temperaturePoints: [(date: Date, value: Double)] {
+        recentTemperatures.compactMap { temp in
+            guard let date = DateFormatting.parseISO(temp.time) else { return nil }
+            return (date: date, value: temp.temperature)
+        }.sorted { $0.date < $1.date }
     }
 
     /// Build data context string for AI queries

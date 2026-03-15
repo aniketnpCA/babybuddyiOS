@@ -119,8 +119,8 @@ nonisolated struct PetModeTheme: Sendable {
     // MARK: - Static Instances
 
     static let baby = PetModeTheme(
-        appName: "Baby Buddy",
-        setupTagline: "Connect to your Baby Buddy server",
+        appName: "Jaybird",
+        setupTagline: "Jaybird, for Baby Buddy",
         setupHint: "Find this in Baby Buddy under User Settings",
         feedingTabName: "Feeding",
         feedingTabIcon: "drop.fill",
@@ -196,15 +196,15 @@ nonisolated struct PetModeTheme: Sendable {
         nextFeedingCategory: "Feeding",
         nextPumpingCategory: "Pumping",
         nextDiaperCategory: "Diaper",
-        aboutAppName: "Baby Buddy",
-        aboutAppIcon: "heart.fill",
-        aboutIconColor: "pink"
+        aboutAppName: "Jaybird",
+        aboutAppIcon: "bird.fill",
+        aboutIconColor: "blue"
     )
 
     static let dog = PetModeTheme(
-        appName: "Fur Baby Buddy",
-        setupTagline: "Connect to your Fur Baby Buddy server",
-        setupHint: "Find this in Fur Baby Buddy under User Settings",
+        appName: "Jaybird",
+        setupTagline: "Jaybird, for Baby Buddy",
+        setupHint: "Find this in Baby Buddy under User Settings",
         feedingTabName: "Meals",
         feedingTabIcon: "fork.knife",
         sleepTabName: "Rest",
@@ -279,8 +279,8 @@ nonisolated struct PetModeTheme: Sendable {
         nextFeedingCategory: "Meal",
         nextPumpingCategory: "Food Stock",
         nextDiaperCategory: "Potty",
-        aboutAppName: "Fur Baby Buddy",
-        aboutAppIcon: "pawprint.fill",
-        aboutIconColor: "brown"
+        aboutAppName: "Jaybird",
+        aboutAppIcon: "bird.fill",
+        aboutIconColor: "blue"
     )
 }

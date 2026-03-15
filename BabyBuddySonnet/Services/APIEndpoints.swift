@@ -19,6 +19,18 @@ nonisolated enum APIEndpoints {
     static let timers = "/api/timers/"
     static func timer(_ id: Int) -> String { "/api/timers/\(id)/" }
 
+    // Tummy Time
+    static let tummyTimes = "/api/tummy-times/"
+    static func tummyTime(_ id: Int) -> String { "/api/tummy-times/\(id)/" }
+
+    // Temperature
+    static let temperatures = "/api/temperature/"
+    static func temperature(_ id: Int) -> String { "/api/temperature/\(id)/" }
+
+    // Notes
+    static let notes = "/api/notes/"
+    static func note(_ id: Int) -> String { "/api/notes/\(id)/" }
+
     // Growth measurements
     static let weight = "/api/weight/"
     static func weight(_ id: Int) -> String { "/api/weight/\(id)/" }

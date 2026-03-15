@@ -32,6 +32,11 @@ struct DiaperRowView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                if let amount = change.amount, amount > 0 {
+                    Text(String(format: "%.1f", amount))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             Spacer()

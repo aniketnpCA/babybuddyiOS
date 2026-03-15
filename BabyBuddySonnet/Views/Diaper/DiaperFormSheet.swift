@@ -16,6 +16,7 @@ struct DiaperFormSheet: View {
     @State private var isDeleting = false
     @State private var showDeleteConfirmation = false
     @State private var error: String?
+    @State private var amount: String = ""
 
     init(childID: Int, editing: DiaperChange? = nil, onSave: @escaping () async -> Void) {
         self.childID = childID
@@ -63,6 +64,11 @@ struct DiaperFormSheet: View {
 
                 Section("Time") {
                     DateTimePickerRow(label: "Time", date: $time)
+                }
+
+                Section("Amount (optional)") {
+                    TextField("Amount", text: $amount)
+                        .keyboardType(.decimalPad)
                 }
 
                 if let error {
@@ -116,6 +122,7 @@ struct DiaperFormSheet: View {
         isSolid = change.solid
         if let sc = change.stoolColor { selectedColor = sc }
         if let t = DateFormatting.parseISO(change.time) { time = t }
+        if let a = change.amount { amount = String(format: "%.1f", a) }
     }
 
     private func delete() async {
@@ -147,6 +154,7 @@ struct DiaperFormSheet: View {
                     wet: isWet,
                     solid: isSolid,
                     color: isSolid ? selectedColor.rawValue : "",
+                    amount: Double(amount),
                     notes: nil
                 )
                 let _: DiaperChange = try await APIClient.shared.patch(
@@ -160,6 +168,7 @@ struct DiaperFormSheet: View {
                     wet: isWet,
                     solid: isSolid,
                     color: isSolid ? selectedColor.rawValue : "",
+                    amount: Double(amount),
                     notes: nil
                 )
                 let _: DiaperChange = try await APIClient.shared.post(

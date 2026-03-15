@@ -17,7 +17,7 @@ struct FeedingFormSheet: View {
     @State private var showDeleteConfirmation = false
     @State private var error: String?
 
-    init(childID: Int, editing: Feeding? = nil, onSave: @escaping () async -> Void) {
+    init(childID: Int, editing: Feeding? = nil, initialStartTime: Date? = nil, initialEndTime: Date? = nil, onSave: @escaping () async -> Void) {
         self.childID = childID
         self.editing = editing
         self.onSave = onSave
@@ -33,8 +33,8 @@ struct FeedingFormSheet: View {
             _feedingType = State(initialValue: .breastMilk)
             _feedingMethod = State(initialValue: .bottle)
             _amount = State(initialValue: 3.0)
-            _startTime = State(initialValue: Date.now.addingTimeInterval(-900))
-            _endTime = State(initialValue: Date.now)
+            _startTime = State(initialValue: initialStartTime ?? Date.now.addingTimeInterval(-900))
+            _endTime = State(initialValue: initialEndTime ?? Date.now)
             _notes = State(initialValue: "")
         }
     }

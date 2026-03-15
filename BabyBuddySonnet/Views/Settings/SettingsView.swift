@@ -38,6 +38,23 @@ struct SettingsView: View {
                 }
             }
 
+            AppIconSection()
+
+            Section {
+                Picker("Child's Sex", selection: Binding(
+                    get: { viewModel.settings.childSex },
+                    set: { viewModel.settings.childSex = $0 }
+                )) {
+                    Text("Not Set").tag("")
+                    Text("Boy").tag("M")
+                    Text("Girl").tag("F")
+                }
+            } header: {
+                Text("Growth Charts")
+            } footer: {
+                Text("Used to select WHO growth percentiles (boys vs girls).")
+            }
+
             Section("Daily Feeding Goal") {
                 HStack {
                     Text("Target Amount")
@@ -230,6 +247,86 @@ struct TabOrderSection: View {
     }
 }
 
+// MARK: - App Icon Section
+
+nonisolated enum AppIconChoice: String, CaseIterable, Sendable {
+    case `default` = "AppIcon"
+    case icon1 = "Icon1"
+
+    var displayName: String {
+        switch self {
+        case .default: return "Soft Baby Curls"
+        case .icon1: return "Delicate Hair Wisps"
+        }
+    }
+
+    /// The value to pass to `setAlternateIconName`. `nil` resets to primary.
+    var alternateIconName: String? {
+        self == .default ? nil : rawValue
+    }
+}
+
+struct AppIconSection: View {
+    @State private var selected: AppIconChoice = .default
+
+    var body: some View {
+        Section {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 70), spacing: 12)], spacing: 12) {
+                ForEach(AppIconChoice.allCases, id: \.self) { icon in
+                    Button {
+                        selected = icon
+                        UIApplication.shared.setAlternateIconName(icon.alternateIconName)
+                    } label: {
+                        VStack(spacing: 4) {
+                            Image(uiImage: iconImage(for: icon))
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 60, height: 60)
+                                .clipShape(RoundedRectangle(cornerRadius: 14))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(selected == icon ? Color.accentColor : Color.clear, lineWidth: 3)
+                                )
+                            Text(icon.displayName)
+                                .font(.caption2)
+                                .foregroundStyle(selected == icon ? .primary : .secondary)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.vertical, 4)
+        } header: {
+            Text("App Icon")
+        }
+        .onAppear {
+            if let current = UIApplication.shared.alternateIconName,
+               let choice = AppIconChoice(rawValue: current) {
+                selected = choice
+            } else {
+                selected = .default
+            }
+        }
+    }
+
+    private func iconImage(for icon: AppIconChoice) -> UIImage {
+        // Try loading from the asset catalog by icon set name
+        if let img = UIImage(named: icon.rawValue) {
+            return img
+        }
+        // Fallback: try loading the app's current icon
+        if icon == .default,
+           let icons = Bundle.main.infoDictionary?["CFBundleIcons"] as? [String: Any],
+           let primary = icons["CFBundlePrimaryIcon"] as? [String: Any],
+           let files = primary["CFBundleIconFiles"] as? [String],
+           let name = files.last,
+           let img = UIImage(named: name) {
+            return img
+        }
+        return UIImage(systemName: "app.fill") ?? UIImage()
+    }
+}
+
 // MARK: - About Section
 
 struct AboutSection: View {
@@ -249,7 +346,7 @@ struct AboutSection: View {
             HStack(spacing: 12) {
                 Image(systemName: theme.aboutAppIcon)
                     .font(.title2)
-                    .foregroundStyle(theme.aboutIconColor == "brown" ? Color.brown : Color.pink)
+                    .foregroundStyle(theme.aboutIconColor == "brown" ? Color.brown : theme.aboutIconColor == "blue" ? Color.blue : Color.pink)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(theme.aboutAppName)
                         .font(.headline)

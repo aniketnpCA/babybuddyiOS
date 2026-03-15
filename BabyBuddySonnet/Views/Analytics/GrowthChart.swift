@@ -6,6 +6,7 @@ struct GrowthChart: View {
     let heightMeasurements: [HeightMeasurement]
     let headCircumferenceMeasurements: [HeadCircumferenceMeasurement]
     let birthDate: String
+    var childSex: String = ""
 
     private var ageInMonths: Int {
         guard let date = DateFormatting.parseDate(birthDate) else { return 0 }
@@ -48,7 +49,7 @@ struct GrowthChart: View {
             Chart {
                 // WHO percentile bands
                 ForEach(0...min(ageInMonths + 2, 24), id: \.self) { month in
-                    let p = WHOGrowthData.weightPercentiles(atMonth: month)
+                    let p = WHOGrowthData.weightPercentiles(atMonth: month, sex: childSex)
                     AreaMark(
                         x: .value("Month", month),
                         yStart: .value("P3", p.p3),
@@ -125,7 +126,7 @@ struct GrowthChart: View {
 
             Chart {
                 ForEach(0...min(ageInMonths + 2, 24), id: \.self) { month in
-                    let p = WHOGrowthData.lengthPercentiles(atMonth: month)
+                    let p = WHOGrowthData.lengthPercentiles(atMonth: month, sex: childSex)
                     AreaMark(
                         x: .value("Month", month),
                         yStart: .value("P3", p.p3),
@@ -185,7 +186,7 @@ struct GrowthChart: View {
 
             Chart {
                 ForEach(0...min(ageInMonths + 2, 24), id: \.self) { month in
-                    let p = WHOGrowthData.headCircumferencePercentiles(atMonth: month)
+                    let p = WHOGrowthData.headCircumferencePercentiles(atMonth: month, sex: childSex)
                     AreaMark(
                         x: .value("Month", month),
                         yStart: .value("P3", p.p3),

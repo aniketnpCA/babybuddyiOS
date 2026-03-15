@@ -11,6 +11,15 @@ struct DashboardView: View {
     @State private var showDiaperForm = false
     @State private var showCustomize = false
 
+    // Timer management
+    @State private var showStartTimer = false
+    @State private var timerToStop: BabyTimer?
+    @State private var timerDeleteConfirmation: BabyTimer?
+
+    // Pre-filled times from stopped timer
+    @State private var timerStartTime: Date?
+    @State private var timerEndTime: Date?
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -29,10 +38,19 @@ struct DashboardView: View {
                         )
                         .padding(.horizontal)
 
-                        if !viewModel.activeTimers.isEmpty {
-                            ActiveTimersCard(timers: viewModel.activeTimers)
-                                .padding(.horizontal)
-                        }
+                        ActiveTimersCard(
+                            timers: viewModel.activeTimers,
+                            onStop: { timer in
+                                timerToStop = timer
+                            },
+                            onDelete: { timer in
+                                timerDeleteConfirmation = timer
+                            },
+                            onStart: {
+                                showStartTimer = true
+                            }
+                        )
+                        .padding(.horizontal)
 
                         NextExpectedCard(
                             nextFeedingTime: viewModel.nextFeedingTime,
@@ -82,6 +100,35 @@ struct DashboardView: View {
                                 .padding(.horizontal)
                         }
 
+                        // More Activities
+                        VStack(spacing: 8) {
+                            HStack {
+                                Text("More Activities")
+                                    .font(.subheadline.bold())
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                            }
+
+                            NavigationLink {
+                                TummyTimeView(childID: child.id)
+                            } label: {
+                                activityNavRow("Tummy Time", icon: "figure.play", color: .green)
+                            }
+
+                            NavigationLink {
+                                TemperatureView(childID: child.id)
+                            } label: {
+                                activityNavRow("Temperature", icon: "thermometer.medium", color: .red)
+                            }
+
+                            NavigationLink {
+                                NotesView(childID: child.id)
+                            } label: {
+                                activityNavRow("Notes", icon: "note.text", color: .yellow)
+                            }
+                        }
+                        .padding(.horizontal)
+
                         // Customize button
                         Button {
                             showCustomize = true
@@ -119,42 +166,124 @@ struct DashboardView: View {
                 }
             }
             .refreshable {
-                await viewModel.loadDashboard(childID: child.id, childName: child.displayName, birthDate: child.birthDate)
-                await NotificationService.shared.rescheduleAll(childID: child.id)
+                await reloadDashboard()
             }
             .task {
-                await viewModel.loadDashboard(childID: child.id, childName: child.displayName, birthDate: child.birthDate)
-                await NotificationService.shared.rescheduleAll(childID: child.id)
+                await reloadDashboard()
             }
-            .sheet(isPresented: $showFeedingForm) {
-                FeedingFormSheet(childID: child.id) {
-                    await viewModel.loadDashboard(childID: child.id, childName: child.displayName, birthDate: child.birthDate)
-                    await NotificationService.shared.rescheduleAll(childID: child.id)
+            .sheet(isPresented: $showFeedingForm, onDismiss: clearTimerTimes) {
+                FeedingFormSheet(childID: child.id, initialStartTime: timerStartTime, initialEndTime: timerEndTime) {
+                    await reloadDashboard()
                 }
             }
-            .sheet(isPresented: $showPumpingForm) {
-                PumpingFormSheet(childID: child.id) {
-                    await viewModel.loadDashboard(childID: child.id, childName: child.displayName, birthDate: child.birthDate)
-                    await NotificationService.shared.rescheduleAll(childID: child.id)
+            .sheet(isPresented: $showPumpingForm, onDismiss: clearTimerTimes) {
+                PumpingFormSheet(childID: child.id, initialStartTime: timerStartTime, initialEndTime: timerEndTime) {
+                    await reloadDashboard()
                 }
             }
-            .sheet(isPresented: $showSleepForm) {
-                SleepFormSheet(childID: child.id) {
-                    await viewModel.loadDashboard(childID: child.id, childName: child.displayName, birthDate: child.birthDate)
-                    await NotificationService.shared.rescheduleAll(childID: child.id)
+            .sheet(isPresented: $showSleepForm, onDismiss: clearTimerTimes) {
+                SleepFormSheet(childID: child.id, initialStartTime: timerStartTime, initialEndTime: timerEndTime) {
+                    await reloadDashboard()
                 }
             }
             .sheet(isPresented: $showDiaperForm) {
                 DiaperFormSheet(childID: child.id) {
-                    await viewModel.loadDashboard(childID: child.id, childName: child.displayName, birthDate: child.birthDate)
-                    await NotificationService.shared.rescheduleAll(childID: child.id)
+                    await reloadDashboard()
                 }
             }
             .sheet(isPresented: $showCustomize) {
                 DashboardCustomizeSheet()
             }
+            .sheet(isPresented: $showStartTimer) {
+                StartTimerSheet(childID: child.id) { name in
+                    await viewModel.startTimer(childID: child.id, name: name)
+                }
+            }
+            .sheet(isPresented: $showTummyTimeForm, onDismiss: clearTimerTimes) {
+                TummyTimeFormSheet(childID: child.id, initialStartTime: timerStartTime, initialEndTime: timerEndTime) {
+                    await reloadDashboard()
+                }
+            }
+            .sheet(isPresented: $showTemperatureForm) {
+                TemperatureFormSheet(childID: child.id) {
+                    await reloadDashboard()
+                }
+            }
+            .sheet(isPresented: $showNoteForm) {
+                NoteFormSheet(childID: child.id) {
+                    await reloadDashboard()
+                }
+            }
+            .sheet(item: $timerToStop) { timer in
+                StopTimerSheet(
+                    timer: timer,
+                    childID: child.id,
+                    onStop: {
+                        await viewModel.stopTimer(timer)
+                    },
+                    onLogActivity: { activityType, start, end in
+                        timerStartTime = start
+                        timerEndTime = end
+                        switch activityType {
+                        case .feeding: showFeedingForm = true
+                        case .sleep: showSleepForm = true
+                        case .pumping: showPumpingForm = true
+                        case .tummyTime: showTummyTimeForm = true
+                        case .none: break
+                        }
+                    }
+                )
+            }
+            .confirmationDialog(
+                "Delete Timer",
+                isPresented: Binding(
+                    get: { timerDeleteConfirmation != nil },
+                    set: { if !$0 { timerDeleteConfirmation = nil } }
+                ),
+                presenting: timerDeleteConfirmation
+            ) { timer in
+                Button("Delete", role: .destructive) {
+                    Task {
+                        await viewModel.deleteTimer(timer)
+                    }
+                }
+            } message: { _ in
+                Text("This timer will be permanently deleted.")
+            }
         }
     }
+
+    private func reloadDashboard() async {
+        await viewModel.loadDashboard(childID: child.id, childName: child.displayName, birthDate: child.birthDate)
+        await NotificationService.shared.rescheduleAll(childID: child.id)
+    }
+
+    private func clearTimerTimes() {
+        timerStartTime = nil
+        timerEndTime = nil
+    }
+
+    private func activityNavRow(_ title: String, icon: String, color: Color) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.body)
+                .foregroundStyle(color)
+                .frame(width: 28)
+            Text(title)
+                .font(.subheadline.weight(.medium))
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundStyle(.tertiary)
+        }
+        .padding(12)
+        .background(.regularMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+
+    @State private var showTummyTimeForm = false
+    @State private var showTemperatureForm = false
+    @State private var showNoteForm = false
 
     @ViewBuilder
     private func dashboardWidgetView(for widget: DashboardWidget) -> some View {
@@ -195,6 +324,45 @@ struct DashboardView: View {
             if let comparison = viewModel.monthlyComparison {
                 MonthlyComparisonCard(comparison: comparison)
             }
+
+        case .bmiChart:
+            BMIChart(
+                bmiMeasurements: viewModel.bmiMeasurements,
+                birthDate: child.birthDate
+            )
+
+        case .feedingByTypeChart:
+            FeedingByTypeChart(dailyFeedingByType: viewModel.dailyFeedingByType)
+
+        case .feedingPatternChart:
+            FeedingPatternChart(feedingScatterPoints: viewModel.feedingScatterPoints)
+
+        case .feedingDurationsChart:
+            FeedingDurationsChart(dailyFeedingDurations: viewModel.dailyFeedingDurations)
+
+        case .feedingIntervalsChart:
+            FeedingIntervalsChart(dailyFeedingIntervals: viewModel.dailyFeedingIntervals)
+
+        case .sleepTotalsChart:
+            SleepTotalsChart(
+                dailySleepTotals: viewModel.dailySleepTotals,
+                targetHours: settings.sleepTargetHours
+            )
+
+        case .pumpingAmountsChart:
+            PumpingAmountsChart(dailyPumpingOz: viewModel.dailyPumpingOz)
+
+        case .diaperIntervalsChart:
+            DiaperIntervalsChart(diaperIntervals: viewModel.diaperIntervals)
+
+        case .diaperLifetimesChart:
+            DiaperLifetimesChart(diaperIntervals: viewModel.diaperIntervals)
+
+        case .tummyTimeChart:
+            TummyTimeChart(dailyTummyTimeMinutes: viewModel.dailyTummyTimeMinutes)
+
+        case .temperatureChart:
+            TemperatureChart(temperatureReadings: viewModel.temperaturePoints)
         }
     }
 
@@ -211,6 +379,15 @@ struct DashboardView: View {
             },
             FABItem(label: theme.quickActionDiaperLabel, icon: theme.diaperTabIcon, color: .teal) {
                 showDiaperForm = true
+            },
+            FABItem(label: "Tummy Time", icon: "figure.play", color: .green) {
+                showTummyTimeForm = true
+            },
+            FABItem(label: "Temperature", icon: "thermometer.medium", color: .red) {
+                showTemperatureForm = true
+            },
+            FABItem(label: "Note", icon: "note.text", color: .yellow) {
+                showNoteForm = true
             },
         ]
     }

@@ -76,3 +76,23 @@ nonisolated struct CreateHeadCircumferenceInput: Codable, Sendable {
     let date: String
     let notes: String?
 }
+
+// MARK: - Update Input Structs
+
+nonisolated struct UpdateWeightInput: Codable, Sendable {
+    let weight: Double?
+    let date: String?
+    let notes: String?
+}
+
+nonisolated struct UpdateHeightInput: Codable, Sendable {
+    let height: Double?
+    let date: String?
+    let notes: String?
+}
+
+nonisolated struct UpdateHeadCircumferenceInput: Codable, Sendable {
+    let headCircumference: Double?
+    let date: String?
+    let notes: String?
+}

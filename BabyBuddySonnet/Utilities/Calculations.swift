@@ -219,6 +219,24 @@ nonisolated enum Calculations {
         }
     }
 
+    // MARK: - Moving Average
+
+    /// Compute a rolling moving average over a window of `window` entries.
+    /// Returns nil for the `ma` field until enough data points exist.
+    static func movingAverage(
+        _ data: [(date: String, value: Double)],
+        window: Int
+    ) -> [(date: String, value: Double, ma: Double?)] {
+        data.enumerated().map { index, item in
+            let start = max(0, index - window + 1)
+            let slice = data[start...index]
+            let avg = slice.count >= window
+                ? slice.reduce(0.0) { $0 + $1.value } / Double(slice.count)
+                : nil
+            return (date: item.date, value: item.value, ma: avg)
+        }
+    }
+
     // MARK: - Grouping
 
     static func groupByDate<T>(_ items: [T], dateExtractor: (T) -> String?) -> [(key: String, items: [T])] {

@@ -7,15 +7,17 @@ struct SleepFormSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     @State private var isNap = true
-    @State private var startTime: Date = Date().addingTimeInterval(-3600)
-    @State private var endTime: Date = Date()
+    @State private var startTime: Date
+    @State private var endTime: Date
     @State private var isSaving = false
     @State private var error: String?
 
-    init(childID: Int, editing: SleepRecord? = nil, onSave: @escaping () async -> Void) {
+    init(childID: Int, editing: SleepRecord? = nil, initialStartTime: Date? = nil, initialEndTime: Date? = nil, onSave: @escaping () async -> Void) {
         self.childID = childID
         self.editing = editing
         self.onSave = onSave
+        _startTime = State(initialValue: initialStartTime ?? Date().addingTimeInterval(-3600))
+        _endTime = State(initialValue: initialEndTime ?? Date())
     }
 
     private var isEditing: Bool { editing != nil }

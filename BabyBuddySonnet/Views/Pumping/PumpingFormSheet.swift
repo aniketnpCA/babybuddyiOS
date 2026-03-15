@@ -15,7 +15,7 @@ struct PumpingFormSheet: View {
     @State private var showDeleteConfirmation = false
     @State private var error: String?
 
-    init(childID: Int, editing: Pumping? = nil, onSave: @escaping () async -> Void) {
+    init(childID: Int, editing: Pumping? = nil, initialStartTime: Date? = nil, initialEndTime: Date? = nil, onSave: @escaping () async -> Void) {
         self.childID = childID
         self.editing = editing
         self.onSave = onSave
@@ -28,8 +28,8 @@ struct PumpingFormSheet: View {
         } else {
             _amount = State(initialValue: 0.0)
             _category = State(initialValue: .toBeConsumed)
-            _startTime = State(initialValue: Date.now.addingTimeInterval(-1800))
-            _endTime = State(initialValue: Date.now)
+            _startTime = State(initialValue: initialStartTime ?? Date.now.addingTimeInterval(-1800))
+            _endTime = State(initialValue: initialEndTime ?? Date.now)
         }
     }
 
