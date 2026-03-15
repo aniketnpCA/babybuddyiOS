@@ -6,19 +6,37 @@ struct FeedingFormSheet: View {
     let onSave: () async -> Void
     @Environment(\.dismiss) private var dismiss
 
-    @State private var feedingType: FeedingType = .breastMilk
-    @State private var feedingMethod: FeedingMethod = .bottle
-    @State private var amount: Double = 3.0
-    @State private var startTime: Date = Date().addingTimeInterval(-900)
-    @State private var endTime: Date = Date()
-    @State private var notes: String = ""
+    @State private var feedingType: FeedingType
+    @State private var feedingMethod: FeedingMethod
+    @State private var amount: Double
+    @State private var startTime: Date
+    @State private var endTime: Date
+    @State private var notes: String
     @State private var isSaving = false
+    @State private var isDeleting = false
+    @State private var showDeleteConfirmation = false
     @State private var error: String?
 
     init(childID: Int, editing: Feeding? = nil, onSave: @escaping () async -> Void) {
         self.childID = childID
         self.editing = editing
         self.onSave = onSave
+
+        if let feeding = editing {
+            _feedingType = State(initialValue: feeding.feedingType ?? .breastMilk)
+            _feedingMethod = State(initialValue: feeding.feedingMethod ?? .bottle)
+            _amount = State(initialValue: feeding.amount ?? 3.0)
+            _startTime = State(initialValue: DateFormatting.parseISO(feeding.start) ?? Date.now.addingTimeInterval(-900))
+            _endTime = State(initialValue: DateFormatting.parseISO(feeding.end) ?? Date.now)
+            _notes = State(initialValue: feeding.notes ?? "")
+        } else {
+            _feedingType = State(initialValue: .breastMilk)
+            _feedingMethod = State(initialValue: .bottle)
+            _amount = State(initialValue: 3.0)
+            _startTime = State(initialValue: Date.now.addingTimeInterval(-900))
+            _endTime = State(initialValue: Date.now)
+            _notes = State(initialValue: "")
+        }
     }
 
     private var isEditing: Bool { editing != nil }
@@ -76,6 +94,13 @@ struct FeedingFormSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                if isEditing {
+                    ToolbarItem(placement: .destructiveAction) {
+                        Button("Delete") { showDeleteConfirmation = true }
+                            .foregroundStyle(.red)
+                            .disabled(isDeleting || isSaving)
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         Task { await save() }
@@ -86,24 +111,38 @@ struct FeedingFormSheet: View {
                             Text("Save")
                         }
                     }
-                    .disabled(isSaving)
+                    .disabled(isSaving || isDeleting)
                 }
             }
-            .onAppear { prefillIfEditing() }
+            .confirmationDialog("Delete Feeding", isPresented: $showDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
+                    Task { await delete() }
+                }
+            } message: {
+                Text("This action cannot be undone.")
+            }
         }
     }
 
-    private func prefillIfEditing() {
+    private func delete() async {
         guard let feeding = editing else { return }
-        if let ft = feeding.feedingType { feedingType = ft }
-        if let fm = feeding.feedingMethod { feedingMethod = fm }
-        amount = feeding.amount ?? 3.0
-        if let s = DateFormatting.parseISO(feeding.start) { startTime = s }
-        if let e = DateFormatting.parseISO(feeding.end) { endTime = e }
-        notes = feeding.notes ?? ""
+        isDeleting = true
+        error = nil
+        defer { isDeleting = false }
+
+        do {
+            try await APIClient.shared.delete(path: APIEndpoints.feeding(feeding.id))
+            await onSave()
+            dismiss()
+        } catch {
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
+        }
     }
 
     private func save() async {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         isSaving = true
         error = nil
         defer { isSaving = false }

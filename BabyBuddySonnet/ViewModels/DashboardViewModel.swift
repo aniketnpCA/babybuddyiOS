@@ -21,6 +21,21 @@ final class DashboardViewModel {
     var todayFeedings: [Feeding] = []
     var weekFeedings: [Feeding] = []
 
+    // Growth data for profile card
+    var latestWeight: WeightMeasurement?
+    var latestHeight: HeightMeasurement?
+    var latestHeadCircumference: HeadCircumferenceMeasurement?
+
+    // Extra widget data (loaded on demand)
+    var weightMeasurements: [WeightMeasurement] = []
+    var heightMeasurements: [HeightMeasurement] = []
+    var headCircumferenceMeasurements: [HeadCircumferenceMeasurement] = []
+    var recentFeedings: [Feeding] = []
+    var recentPumping: [Pumping] = []
+    var recentSleep: [SleepRecord] = []
+    var recentDiaperChanges: [DiaperChange] = []
+    var weekPumping: [Pumping] = []
+
     // MARK: - Next Expected Times
 
     var nextFeedingTime: Date? {
@@ -109,9 +124,178 @@ final class DashboardViewModel {
         return result
     }
 
+    // MARK: - Widget Computed Properties
+
+    var feedingByHour: [Int: Int] {
+        var counts = [Int: Int]()
+        for feeding in recentFeedings {
+            if let date = DateFormatting.parseISO(feeding.start) {
+                let hour = Calendar.current.component(.hour, from: date)
+                counts[hour, default: 0] += 1
+            }
+        }
+        return counts
+    }
+
+    var dailyFeedingOz: [(date: String, oz: Double)] {
+        let grouped = Calculations.groupByDate(recentFeedings) { $0.start }
+        return grouped.map { dateStr, feedings in
+            (date: dateStr, oz: Calculations.calculateTotalConsumed(feedings))
+        }.sorted { $0.date < $1.date }
+    }
+
+    var dailyPumpingOz: [(date: String, oz: Double)] {
+        let grouped = Calculations.groupByDate(recentPumping) { $0.start }
+        return grouped.map { dateStr, pumpings in
+            (date: dateStr, oz: Calculations.calculateTotalPumped(pumpings))
+        }.sorted { $0.date < $1.date }
+    }
+
+    var dailyDiaperCounts: [(date: String, wetOnly: Int, solidOnly: Int, both: Int)] {
+        let grouped = Calculations.groupByDate(recentDiaperChanges) { $0.time }
+        return grouped.map { dateStr, changes in
+            var wetOnly = 0, solidOnly = 0, both = 0
+            for change in changes {
+                if change.wet && change.solid { both += 1 }
+                else if change.wet { wetOnly += 1 }
+                else if change.solid { solidOnly += 1 }
+            }
+            return (date: dateStr, wetOnly: wetOnly, solidOnly: solidOnly, both: both)
+        }.sorted { $0.date < $1.date }
+    }
+
+    var sleepBlocks: [(date: String, startHour: Double, endHour: Double, isNap: Bool)] {
+        let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date())!
+        var blocks: [(date: String, startHour: Double, endHour: Double, isNap: Bool)] = []
+        for sleep in recentSleep {
+            guard let startDate = DateFormatting.parseISO(sleep.start),
+                  let endDate = DateFormatting.parseISO(sleep.end),
+                  startDate >= sevenDaysAgo
+            else { continue }
+            let cal = Calendar.current
+            let startHour = Double(cal.component(.hour, from: startDate)) +
+                           Double(cal.component(.minute, from: startDate)) / 60.0
+            let endHour = Double(cal.component(.hour, from: endDate)) +
+                         Double(cal.component(.minute, from: endDate)) / 60.0
+            let dateStr = DateFormatting.formatDateOnly(startDate)
+            blocks.append((date: dateStr, startHour: startHour, endHour: endHour, isNap: sleep.nap))
+        }
+        return blocks
+    }
+
+    var monthlyComparison: MonthlyComparison? {
+        let cal = Calendar.current
+        let now = Date()
+        guard let thisMonthStart = cal.date(from: cal.dateComponents([.year, .month], from: now)),
+              let lastMonthStart = cal.date(byAdding: .month, value: -1, to: thisMonthStart)
+        else { return nil }
+
+        let thisMonthFeedings = recentFeedings.filter {
+            guard let d = DateFormatting.parseISO($0.start) else { return false }
+            return d >= thisMonthStart
+        }
+        let lastMonthFeedings = recentFeedings.filter {
+            guard let d = DateFormatting.parseISO($0.start) else { return false }
+            return d >= lastMonthStart && d < thisMonthStart
+        }
+        let thisMonthSleep = recentSleep.filter {
+            guard let d = DateFormatting.parseISO($0.start) else { return false }
+            return d >= thisMonthStart
+        }
+        let lastMonthSleep = recentSleep.filter {
+            guard let d = DateFormatting.parseISO($0.start) else { return false }
+            return d >= lastMonthStart && d < thisMonthStart
+        }
+        let thisMonthDiapers = recentDiaperChanges.filter {
+            guard let d = DateFormatting.parseISO($0.time) else { return false }
+            return d >= thisMonthStart
+        }
+        let lastMonthDiapers = recentDiaperChanges.filter {
+            guard let d = DateFormatting.parseISO($0.time) else { return false }
+            return d >= lastMonthStart && d < thisMonthStart
+        }
+        let thisMonthPumping = recentPumping.filter {
+            guard let d = DateFormatting.parseISO($0.start) else { return false }
+            return d >= thisMonthStart
+        }
+        let lastMonthPumping = recentPumping.filter {
+            guard let d = DateFormatting.parseISO($0.start) else { return false }
+            return d >= lastMonthStart && d < thisMonthStart
+        }
+
+        let daysThisMonth = max(1, cal.component(.day, from: now))
+        let daysLastMonth = max(1, cal.range(of: .day, in: .month, for: lastMonthStart)?.count ?? 30)
+
+        return MonthlyComparison(
+            avgDailyFeedingOzThisMonth: Calculations.calculateTotalConsumed(thisMonthFeedings) / Double(daysThisMonth),
+            avgDailyFeedingOzLastMonth: Calculations.calculateTotalConsumed(lastMonthFeedings) / Double(daysLastMonth),
+            avgDailySleepHoursThisMonth: Double(Calculations.calculateTotalSleepMinutes(thisMonthSleep)) / 60.0 / Double(daysThisMonth),
+            avgDailySleepHoursLastMonth: Double(Calculations.calculateTotalSleepMinutes(lastMonthSleep)) / 60.0 / Double(daysLastMonth),
+            avgDailyDiapersThisMonth: Double(thisMonthDiapers.count) / Double(daysThisMonth),
+            avgDailyDiapersLastMonth: Double(lastMonthDiapers.count) / Double(daysLastMonth),
+            totalPumpedThisMonth: Calculations.calculateTotalPumped(thisMonthPumping),
+            totalPumpedLastMonth: Calculations.calculateTotalPumped(lastMonthPumping)
+        )
+    }
+
+    var weeklyFeedingChartData: [FeedingViewModel.DailyFeedingData] {
+        let calendar = Calendar.current
+        let today = DateFormatting.startOfToday()
+        var data: [FeedingViewModel.DailyFeedingData] = []
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+
+        for dayOffset in (0..<7).reversed() {
+            guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
+            let dateKey = DateFormatting.formatDateOnly(date)
+            let dayFeedings = weekFeedings.filter { f in
+                guard let d = DateFormatting.parseISO(f.start) else { return false }
+                return DateFormatting.formatDateOnly(d) == dateKey
+            }
+            let totalOz = Calculations.calculateTotalConsumed(dayFeedings)
+            data.append(FeedingViewModel.DailyFeedingData(
+                id: dateKey,
+                date: dateKey,
+                displayDate: formatter.string(from: date),
+                totalOz: totalOz
+            ))
+        }
+        return data
+    }
+
+    var weeklyPumpingChartData: [PumpingViewModel.DailyPumpingData] {
+        let calendar = Calendar.current
+        let today = DateFormatting.startOfToday()
+        var data: [PumpingViewModel.DailyPumpingData] = []
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEE"
+
+        for dayOffset in (0..<7).reversed() {
+            guard let date = calendar.date(byAdding: .day, value: -dayOffset, to: today) else { continue }
+            let dateKey = DateFormatting.formatDateOnly(date)
+            let dayPumping = weekPumping.filter { p in
+                guard let d = DateFormatting.parseISO(p.start) else { return false }
+                return DateFormatting.formatDateOnly(d) == dateKey
+            }
+            let tbc = dayPumping.filter { $0.milkCategory == .toBeConsumed }.reduce(0.0) { $0 + ($1.amount ?? 0) }
+            let consumed = dayPumping.filter { $0.milkCategory == .consumed }.reduce(0.0) { $0 + ($1.amount ?? 0) }
+            let frozen = dayPumping.filter { $0.milkCategory == .frozen }.reduce(0.0) { $0 + ($1.amount ?? 0) }
+
+            data.append(PumpingViewModel.DailyPumpingData(
+                id: dateKey,
+                date: dateKey,
+                displayDate: formatter.string(from: date),
+                toBeConsumedOz: tbc,
+                consumedOz: consumed,
+                frozenOz: frozen
+            ))
+        }
+        return data
+    }
+
     // MARK: - Load
 
-    func loadDashboard(childID: Int, childName: String? = nil) async {
+    func loadDashboard(childID: Int, childName: String? = nil, birthDate: String? = nil) async {
         isLoading = true
         error = nil
         defer { isLoading = false }
@@ -182,12 +366,45 @@ final class DashboardViewModel {
                 ]
             )
 
+            // Always fetch latest growth measurements for profile card
+            async let weightResponse: PaginatedResponse<WeightMeasurement> = APIClient.shared.get(
+                path: APIEndpoints.weight,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "ordering", value: "-date"),
+                    URLQueryItem(name: "limit", value: "1"),
+                ]
+            )
+
+            async let heightResponse: PaginatedResponse<HeightMeasurement> = APIClient.shared.get(
+                path: APIEndpoints.height,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "ordering", value: "-date"),
+                    URLQueryItem(name: "limit", value: "1"),
+                ]
+            )
+
+            async let headResponse: PaginatedResponse<HeadCircumferenceMeasurement> = APIClient.shared.get(
+                path: APIEndpoints.headCircumference,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "ordering", value: "-date"),
+                    URLQueryItem(name: "limit", value: "1"),
+                ]
+            )
+
             let feedings = try await feedingsResponse.results.filter { DateFormatting.isToday($0.start) }
             let allWeekFeedings = try await weekFeedingsResponse.results
             let pumpings = try await pumpingResponse.results.filter { DateFormatting.isToday($0.start) }
             let sleeps = try await sleepResponse.results.filter { DateFormatting.isToday($0.start) }
             let latestDiaper = try await diaperResponse.results.first
             activeTimers = try await timersResponse.results
+
+            // Growth data for profile card
+            latestWeight = try await weightResponse.results.first
+            latestHeight = try await heightResponse.results.first
+            latestHeadCircumference = try await headResponse.results.first
 
             todayFeedings = feedings.sorted { $0.end > $1.end }
             weekFeedings = allWeekFeedings.sorted { $0.end > $1.end }
@@ -235,8 +452,130 @@ final class DashboardViewModel {
                 )
             }
 
+            // Load extra widget data if any widgets are enabled
+            await loadWidgetData(childID: childID, birthDate: birthDate)
+
         } catch {
             self.error = error.localizedDescription
+        }
+    }
+
+    // MARK: - Widget Data Loading
+
+    private func loadWidgetData(childID: Int, birthDate: String?) async {
+        let enabledWidgets = settings.dashboardWidgets
+        guard !enabledWidgets.isEmpty else { return }
+
+        let thirtyDaysAgo = DateFormatting.formatDateOnly(
+            Calendar.current.date(byAdding: .day, value: -30, to: Date())!
+        )
+        let tomorrow = DateFormatting.formatDateOnly(DateFormatting.tomorrow())
+        let sevenDaysAgo = DateFormatting.formatDateOnly(DateFormatting.sevenDaysAgo())
+
+        let needsGrowth = enabledWidgets.contains(.growthChart)
+        let needs30DayFeedings = enabledWidgets.contains(.dailyTrendChart) || enabledWidgets.contains(.feedingHeatmapChart) || enabledWidgets.contains(.monthlyComparison)
+        let needs30DayPumping = enabledWidgets.contains(.dailyTrendChart) || enabledWidgets.contains(.monthlyComparison)
+        let needsSleep = enabledWidgets.contains(.sleepPatternChart) || enabledWidgets.contains(.monthlyComparison)
+        let needsDiapers = enabledWidgets.contains(.diaperFrequencyChart) || enabledWidgets.contains(.monthlyComparison)
+        let needsWeekPumping = enabledWidgets.contains(.pumpingWeeklyChart)
+
+        do {
+            if needsGrowth {
+                async let wResp: PaginatedResponse<WeightMeasurement> = APIClient.shared.get(
+                    path: APIEndpoints.weight,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "ordering", value: "date"),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                async let hResp: PaginatedResponse<HeightMeasurement> = APIClient.shared.get(
+                    path: APIEndpoints.height,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "ordering", value: "date"),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                async let hcResp: PaginatedResponse<HeadCircumferenceMeasurement> = APIClient.shared.get(
+                    path: APIEndpoints.headCircumference,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "ordering", value: "date"),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                weightMeasurements = try await wResp.results.sorted { $0.date < $1.date }
+                heightMeasurements = try await hResp.results.sorted { $0.date < $1.date }
+                headCircumferenceMeasurements = try await hcResp.results.sorted { $0.date < $1.date }
+            }
+
+            if needs30DayFeedings {
+                let resp: PaginatedResponse<Feeding> = try await APIClient.shared.get(
+                    path: APIEndpoints.feedings,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "start_min", value: thirtyDaysAgo),
+                        URLQueryItem(name: "start_max", value: tomorrow),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                recentFeedings = resp.results.sorted { $0.start < $1.start }
+            }
+
+            if needs30DayPumping {
+                let resp: PaginatedResponse<Pumping> = try await APIClient.shared.get(
+                    path: APIEndpoints.pumping,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "start_min", value: thirtyDaysAgo),
+                        URLQueryItem(name: "start_max", value: tomorrow),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                recentPumping = resp.results.sorted { $0.start < $1.start }
+            }
+
+            if needsSleep {
+                let resp: PaginatedResponse<SleepRecord> = try await APIClient.shared.get(
+                    path: APIEndpoints.sleep,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "start_min", value: thirtyDaysAgo),
+                        URLQueryItem(name: "start_max", value: tomorrow),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                recentSleep = resp.results.sorted { $0.start < $1.start }
+            }
+
+            if needsDiapers {
+                let resp: PaginatedResponse<DiaperChange> = try await APIClient.shared.get(
+                    path: APIEndpoints.changes,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "time_min", value: thirtyDaysAgo),
+                        URLQueryItem(name: "time_max", value: tomorrow),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                recentDiaperChanges = resp.results.sorted { $0.time < $1.time }
+            }
+
+            if needsWeekPumping {
+                let resp: PaginatedResponse<Pumping> = try await APIClient.shared.get(
+                    path: APIEndpoints.pumping,
+                    queryItems: [
+                        URLQueryItem(name: "child", value: "\(childID)"),
+                        URLQueryItem(name: "start_min", value: sevenDaysAgo),
+                        URLQueryItem(name: "start_max", value: tomorrow),
+                        URLQueryItem(name: "limit", value: "1000"),
+                    ]
+                )
+                weekPumping = resp.results.sorted { $0.start < $1.start }
+            }
+        } catch {
+            // Widget data is supplementary; don't fail the whole dashboard
         }
     }
 }

@@ -13,6 +13,8 @@ struct DiaperFormSheet: View {
     @State private var selectedColor: StoolColor = .yellow
     @State private var time: Date = Date()
     @State private var isSaving = false
+    @State private var isDeleting = false
+    @State private var showDeleteConfirmation = false
     @State private var error: String?
 
     init(childID: Int, editing: DiaperChange? = nil, onSave: @escaping () async -> Void) {
@@ -77,6 +79,13 @@ struct DiaperFormSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                if isEditing {
+                    ToolbarItem(placement: .destructiveAction) {
+                        Button("Delete") { showDeleteConfirmation = true }
+                            .foregroundStyle(.red)
+                            .disabled(isDeleting || isSaving)
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         Task { await save() }
@@ -87,8 +96,15 @@ struct DiaperFormSheet: View {
                             Text("Save")
                         }
                     }
-                    .disabled(isSaving || (!isWet && !isSolid))
+                    .disabled(isSaving || isDeleting || (!isWet && !isSolid))
                 }
+            }
+            .confirmationDialog("Delete Diaper Change", isPresented: $showDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
+                    Task { await delete() }
+                }
+            } message: {
+                Text("This action cannot be undone.")
             }
             .onAppear { prefillIfEditing() }
         }
@@ -100,6 +116,23 @@ struct DiaperFormSheet: View {
         isSolid = change.solid
         if let sc = change.stoolColor { selectedColor = sc }
         if let t = DateFormatting.parseISO(change.time) { time = t }
+    }
+
+    private func delete() async {
+        guard let change = editing else { return }
+        isDeleting = true
+        error = nil
+        defer { isDeleting = false }
+
+        do {
+            try await APIClient.shared.delete(path: APIEndpoints.change(change.id))
+            await onSave()
+            dismiss()
+        } catch {
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
+        }
     }
 
     private func save() async {

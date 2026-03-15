@@ -23,6 +23,9 @@ final class SettingsService {
     // Tab order cache
     private var _tabOrder: [String] = []
 
+    // Dashboard widgets cache
+    private var _dashboardWidgets: [String] = []
+
     // Dog Mode cache — required so @Observable can track changes
     private var _isDogMode: Bool = false
 
@@ -162,7 +165,39 @@ final class SettingsService {
 
     var tabOrder: [String] {
         get { _tabOrder }
-        set { _tabOrder = newValue; store.set(newValue, forKey: Keys.tabOrder); store.synchronize() }
+        set {
+            _tabOrder = newValue
+            store.set(newValue, forKey: Keys.tabOrder)
+            store.synchronize()
+            UserDefaults.standard.set(newValue, forKey: Keys.tabOrder)
+        }
+    }
+
+    // MARK: - Dashboard Widgets
+
+    var dashboardWidgets: [DashboardWidget] {
+        get { _dashboardWidgets.compactMap { DashboardWidget(rawValue: $0) } }
+        set {
+            _dashboardWidgets = newValue.map(\.rawValue)
+            store.set(_dashboardWidgets, forKey: Keys.dashboardWidgets)
+            store.synchronize()
+            UserDefaults.standard.set(_dashboardWidgets, forKey: Keys.dashboardWidgets)
+        }
+    }
+
+    func isDashboardWidgetEnabled(_ widget: DashboardWidget) -> Bool {
+        _dashboardWidgets.contains(widget.rawValue)
+    }
+
+    func toggleDashboardWidget(_ widget: DashboardWidget) {
+        if let index = _dashboardWidgets.firstIndex(of: widget.rawValue) {
+            _dashboardWidgets.remove(at: index)
+        } else {
+            _dashboardWidgets.append(widget.rawValue)
+        }
+        store.set(_dashboardWidgets, forKey: Keys.dashboardWidgets)
+        store.synchronize()
+        UserDefaults.standard.set(_dashboardWidgets, forKey: Keys.dashboardWidgets)
     }
 
     // MARK: - Appearance
@@ -187,7 +222,20 @@ final class SettingsService {
         _aiApiKey = store.string(forKey: Keys.aiApiKey) ?? ""
         _aiBaseURL = store.string(forKey: Keys.aiBaseURL) ?? AppConstants.defaultAIBaseURL
         _aiModel = store.string(forKey: Keys.aiModel) ?? AppConstants.defaultAIModel
-        _tabOrder = (store.array(forKey: Keys.tabOrder) as? [String]) ?? AppTab.defaultOrder.map(\.rawValue)
+        if let order = store.array(forKey: Keys.tabOrder) as? [String] {
+            _tabOrder = order
+        } else if let order = UserDefaults.standard.array(forKey: Keys.tabOrder) as? [String] {
+            _tabOrder = order
+        } else {
+            _tabOrder = AppTab.defaultOrder.map(\.rawValue)
+        }
+        if let widgets = store.array(forKey: Keys.dashboardWidgets) as? [String] {
+            _dashboardWidgets = widgets
+        } else if let widgets = UserDefaults.standard.array(forKey: Keys.dashboardWidgets) as? [String] {
+            _dashboardWidgets = widgets
+        } else {
+            _dashboardWidgets = []
+        }
         _isDogMode = store.bool(forKey: Keys.isDogMode)
         NotificationCenter.default.addObserver(
             forName: NSUbiquitousKeyValueStore.didChangeExternallyNotification,
@@ -206,6 +254,9 @@ final class SettingsService {
             self._aiBaseURL = self.store.string(forKey: Keys.aiBaseURL) ?? AppConstants.defaultAIBaseURL
             self._aiModel = self.store.string(forKey: Keys.aiModel) ?? AppConstants.defaultAIModel
             self._tabOrder = (self.store.array(forKey: Keys.tabOrder) as? [String]) ?? AppTab.defaultOrder.map(\.rawValue)
+            UserDefaults.standard.set(self._tabOrder, forKey: Keys.tabOrder)
+            self._dashboardWidgets = (self.store.array(forKey: Keys.dashboardWidgets) as? [String]) ?? []
+            UserDefaults.standard.set(self._dashboardWidgets, forKey: Keys.dashboardWidgets)
             self._isDogMode = self.store.bool(forKey: Keys.isDogMode)
         }
     }
@@ -236,6 +287,9 @@ final class SettingsService {
 
         // Reset tab order
         tabOrder = AppTab.defaultOrder.map(\.rawValue)
+
+        // Reset dashboard widgets
+        dashboardWidgets = []
 
         // Reset appearance
         isDogMode = false
@@ -275,5 +329,6 @@ final class SettingsService {
         static let aiModel = "aiModel"
         static let tabOrder = "tabOrder"
         static let isDogMode = "isDogMode"
+        static let dashboardWidgets = "dashboardWidgets"
     }
 }

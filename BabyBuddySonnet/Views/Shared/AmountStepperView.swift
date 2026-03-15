@@ -7,12 +7,11 @@ struct AmountStepperView: View {
     var unit: String = "oz"
 
     @State private var isEditing = false
-    @State private var editText = ""
     @FocusState private var textFieldFocused: Bool
 
     var body: some View {
         HStack(spacing: 20) {
-            Button {
+            RepeatingButton {
                 if amount - step >= range.lowerBound {
                     amount -= step
                 }
@@ -21,36 +20,36 @@ struct AmountStepperView: View {
                     .font(.title)
                     .foregroundStyle(.secondary)
             }
-            .buttonStyle(.plain)
 
             if isEditing {
-                TextField("", text: $editText)
+                TextField("", value: $amount, format: .number.precision(.fractionLength(0...2)))
                     .keyboardType(.decimalPad)
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .multilineTextAlignment(.center)
                     .frame(minWidth: 80)
                     .focused($textFieldFocused)
-                    .onSubmit { commitEdit() }
+                    .onSubmit { isEditing = false }
                     .onChange(of: textFieldFocused) { _, focused in
-                        if !focused { commitEdit() }
+                        if !focused { isEditing = false }
                     }
                     .onAppear { textFieldFocused = true }
             } else {
-                Text(String(format: "%.2f", amount))
-                    .font(.system(size: 36, weight: .bold, design: .rounded))
-                    .frame(minWidth: 80)
-                    .contentTransition(.numericText())
-                    .onTapGesture {
-                        editText = String(format: "%.2f", amount)
-                        isEditing = true
-                    }
+                Button {
+                    isEditing = true
+                } label: {
+                    Text(amount, format: .number.precision(.fractionLength(2)))
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
+                        .frame(minWidth: 80)
+                        .contentTransition(.numericText())
+                }
+                .buttonStyle(.plain)
             }
 
             Text(unit)
                 .font(.title3)
                 .foregroundStyle(.secondary)
 
-            Button {
+            RepeatingButton {
                 if amount + step <= range.upperBound {
                     amount += step
                 }
@@ -59,14 +58,38 @@ struct AmountStepperView: View {
                     .font(.title)
                     .foregroundStyle(.blue)
             }
-            .buttonStyle(.plain)
         }
     }
+}
 
-    private func commitEdit() {
-        if let value = Double(editText) {
-            amount = min(max(value, range.lowerBound), range.upperBound)
-        }
-        isEditing = false
+// MARK: - RepeatingButton
+
+private struct RepeatingButton<Label: View>: View {
+    let action: () -> Void
+    @ViewBuilder let label: Label
+
+    @State private var task: Task<Void, Never>?
+
+    var body: some View {
+        label
+            .accessibilityAddTraits(.isButton)
+            .gesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        guard task == nil else { return }
+                        action()
+                        task = Task {
+                            try? await Task.sleep(for: .milliseconds(400))
+                            while !Task.isCancelled {
+                                action()
+                                try? await Task.sleep(for: .milliseconds(150))
+                            }
+                        }
+                    }
+                    .onEnded { _ in
+                        task?.cancel()
+                        task = nil
+                    }
+            )
     }
 }

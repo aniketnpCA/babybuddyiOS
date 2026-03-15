@@ -6,17 +6,31 @@ struct PumpingFormSheet: View {
     let onSave: () async -> Void
     @Environment(\.dismiss) private var dismiss
 
-    @State private var amount: Double = 3.0
-    @State private var category: MilkCategory = .toBeConsumed
-    @State private var startTime: Date = Date().addingTimeInterval(-1800)
-    @State private var endTime: Date = Date()
+    @State private var amount: Double
+    @State private var category: MilkCategory
+    @State private var startTime: Date
+    @State private var endTime: Date
     @State private var isSaving = false
+    @State private var isDeleting = false
+    @State private var showDeleteConfirmation = false
     @State private var error: String?
 
     init(childID: Int, editing: Pumping? = nil, onSave: @escaping () async -> Void) {
         self.childID = childID
         self.editing = editing
         self.onSave = onSave
+
+        if let pumping = editing {
+            _amount = State(initialValue: pumping.amount ?? 0.0)
+            _category = State(initialValue: pumping.milkCategory)
+            _startTime = State(initialValue: DateFormatting.parseISO(pumping.start) ?? Date.now.addingTimeInterval(-1800))
+            _endTime = State(initialValue: DateFormatting.parseISO(pumping.end) ?? Date.now)
+        } else {
+            _amount = State(initialValue: 0.0)
+            _category = State(initialValue: .toBeConsumed)
+            _startTime = State(initialValue: Date.now.addingTimeInterval(-1800))
+            _endTime = State(initialValue: Date.now)
+        }
     }
 
     private var isEditing: Bool { editing != nil }
@@ -59,6 +73,13 @@ struct PumpingFormSheet: View {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
+                if isEditing {
+                    ToolbarItem(placement: .destructiveAction) {
+                        Button("Delete") { showDeleteConfirmation = true }
+                            .foregroundStyle(.red)
+                            .disabled(isDeleting || isSaving)
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         Task { await save() }
@@ -69,22 +90,38 @@ struct PumpingFormSheet: View {
                             Text("Save")
                         }
                     }
-                    .disabled(isSaving)
+                    .disabled(isSaving || isDeleting)
                 }
             }
-            .onAppear { prefillIfEditing() }
+            .confirmationDialog("Delete Pumping Session", isPresented: $showDeleteConfirmation) {
+                Button("Delete", role: .destructive) {
+                    Task { await delete() }
+                }
+            } message: {
+                Text("This action cannot be undone.")
+            }
         }
     }
 
-    private func prefillIfEditing() {
+    private func delete() async {
         guard let pumping = editing else { return }
-        amount = pumping.amount ?? 3.0
-        category = pumping.milkCategory
-        if let s = DateFormatting.parseISO(pumping.start) { startTime = s }
-        if let e = DateFormatting.parseISO(pumping.end) { endTime = e }
+        isDeleting = true
+        error = nil
+        defer { isDeleting = false }
+
+        do {
+            try await APIClient.shared.delete(path: APIEndpoints.pumpingSession(pumping.id))
+            await onSave()
+            dismiss()
+        } catch {
+            if (error as? URLError)?.code != .cancelled {
+                self.error = error.localizedDescription
+            }
+        }
     }
 
     private func save() async {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         isSaving = true
         error = nil
         defer { isSaving = false }
