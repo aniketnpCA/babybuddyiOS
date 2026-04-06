@@ -124,14 +124,24 @@ struct SleepView: View {
             EmptyStateView(icon: theme.sleepTabIcon, title: theme.sleepEmptyTitle, subtitle: theme.sleepEmptySubtitle)
         } else {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.todaySleep) { sleep in
+                ForEach(Array(viewModel.todaySleep.enumerated()), id: \.element.id) { index, sleep in
                     Button { editingSleep = sleep } label: {
                         SleepRowView(sleep: sleep)
                             .padding(.horizontal)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading)
+
+                    if index < viewModel.todaySleep.count - 1 {
+                        let next = viewModel.todaySleep[index + 1]
+                        if let mins = IntervalIndicator.intervalMinutes(from: next.end, to: sleep.start) {
+                            IntervalIndicator(minutes: mins)
+                        } else {
+                            Divider().padding(.leading)
+                        }
+                    } else {
+                        Divider().padding(.leading)
+                    }
                 }
             }
         }

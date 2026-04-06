@@ -120,14 +120,24 @@ struct FeedingView: View {
             EmptyStateView(icon: theme.feedingTabIcon, title: theme.feedingEmptyTitle, subtitle: theme.feedingEmptySubtitle)
         } else {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.todayFeedings) { feeding in
+                ForEach(Array(viewModel.todayFeedings.enumerated()), id: \.element.id) { index, feeding in
                     Button { editingFeeding = feeding } label: {
                         FeedingRowView(feeding: feeding)
                             .padding(.horizontal)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading)
+
+                    if index < viewModel.todayFeedings.count - 1 {
+                        let next = viewModel.todayFeedings[index + 1]
+                        if let mins = IntervalIndicator.intervalMinutes(from: next.end, to: feeding.start) {
+                            IntervalIndicator(minutes: mins)
+                        } else {
+                            Divider().padding(.leading)
+                        }
+                    } else {
+                        Divider().padding(.leading)
+                    }
                 }
             }
         }

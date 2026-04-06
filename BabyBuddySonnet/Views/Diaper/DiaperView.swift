@@ -123,14 +123,24 @@ struct DiaperView: View {
             EmptyStateView(icon: theme.diaperTabIcon, title: theme.diaperEmptyTitle, subtitle: theme.diaperEmptySubtitle)
         } else {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.todayChanges) { change in
+                ForEach(Array(viewModel.todayChanges.enumerated()), id: \.element.id) { index, change in
                     Button { editingChange = change } label: {
                         DiaperRowView(change: change)
                             .padding(.horizontal)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading)
+
+                    if index < viewModel.todayChanges.count - 1 {
+                        let next = viewModel.todayChanges[index + 1]
+                        if let mins = IntervalIndicator.intervalMinutes(from: next.time, to: change.time) {
+                            IntervalIndicator(minutes: mins)
+                        } else {
+                            Divider().padding(.leading)
+                        }
+                    } else {
+                        Divider().padding(.leading)
+                    }
                 }
             }
         }

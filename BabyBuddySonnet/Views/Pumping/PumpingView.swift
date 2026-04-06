@@ -110,14 +110,24 @@ struct PumpingView: View {
             EmptyStateView(icon: theme.pumpingTabIcon, title: theme.pumpingEmptyTitle, subtitle: theme.pumpingEmptySubtitle)
         } else {
             LazyVStack(spacing: 0) {
-                ForEach(viewModel.todayPumping) { session in
+                ForEach(Array(viewModel.todayPumping.enumerated()), id: \.element.id) { index, session in
                     Button { editingPumping = session } label: {
                         PumpingRowView(pumping: session)
                             .padding(.horizontal)
                             .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
-                    Divider().padding(.leading)
+
+                    if index < viewModel.todayPumping.count - 1 {
+                        let next = viewModel.todayPumping[index + 1]
+                        if let mins = IntervalIndicator.intervalMinutes(from: next.end, to: session.start) {
+                            IntervalIndicator(minutes: mins)
+                        } else {
+                            Divider().padding(.leading)
+                        }
+                    } else {
+                        Divider().padding(.leading)
+                    }
                 }
             }
         }

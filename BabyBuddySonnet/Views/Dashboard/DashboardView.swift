@@ -115,6 +115,12 @@ struct DashboardView: View {
                             }
 
                             NavigationLink {
+                                TimelineTabView(childID: child.id)
+                            } label: {
+                                activityNavRow("Timeline", icon: "clock.arrow.circlepath", color: .indigo)
+                            }
+
+                            NavigationLink {
                                 TummyTimeView(childID: child.id)
                             } label: {
                                 activityNavRow("Tummy Time", icon: "figure.play", color: .green)
