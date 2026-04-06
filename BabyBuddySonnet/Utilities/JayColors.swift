@@ -5,64 +5,90 @@ import SwiftUI
 
 extension Color {
     // MARK: - Category Colors (warm/dusty variants)
-    static let jayFeeding = Color("JayFeeding", bundle: nil)
-    static let jayPumping = Color("JayPumping", bundle: nil)
-    static let jaySleep = Color("JaySleep", bundle: nil)
-    static let jayDiaper = Color("JayDiaper", bundle: nil)
-    static let jayTummyTime = Color("JayTummyTime", bundle: nil)
-    static let jayTemperature = Color("JayTemperature", bundle: nil)
-    static let jayNotes = Color("JayNotes", bundle: nil)
+    nonisolated(unsafe) static let jayFeeding = Color("JayFeeding", bundle: nil)
+    nonisolated(unsafe) static let jayPumping = Color("JayPumping", bundle: nil)
+    nonisolated(unsafe) static let jaySleep = Color("JaySleep", bundle: nil)
+    nonisolated(unsafe) static let jayDiaper = Color("JayDiaper", bundle: nil)
+    nonisolated(unsafe) static let jayTummyTime = Color("JayTummyTime", bundle: nil)
+    nonisolated(unsafe) static let jayTemperature = Color("JayTemperature", bundle: nil)
+    nonisolated(unsafe) static let jayNotes = Color("JayNotes", bundle: nil)
 
     // MARK: - Programmatic fallbacks (used if asset catalog colors aren't set)
     // These work in both light and dark mode via adaptive init
 
     /// Dusty blue - feeding
-    static let jayFeedingFallback = Color(light: .init(red: 0.42, green: 0.55, blue: 0.64),
-                                          dark: .init(red: 0.53, green: 0.68, blue: 0.80))
+    nonisolated(unsafe) static let jayFeedingFallback = Color(uiColor: UIColor(
+        light: UIColor(red: 0.42, green: 0.55, blue: 0.64, alpha: 1),
+        dark:  UIColor(red: 0.53, green: 0.68, blue: 0.80, alpha: 1)
+    ))
     /// Warm coral - pumping
-    static let jayPumpingFallback = Color(light: .init(red: 0.85, green: 0.53, blue: 0.42),
-                                          dark: .init(red: 0.90, green: 0.62, blue: 0.52))
+    nonisolated(unsafe) static let jayPumpingFallback = Color(uiColor: UIColor(
+        light: UIColor(red: 0.85, green: 0.53, blue: 0.42, alpha: 1),
+        dark:  UIColor(red: 0.90, green: 0.62, blue: 0.52, alpha: 1)
+    ))
     /// Muted lavender - sleep
-    static let jaySleepFallback = Color(light: .init(red: 0.55, green: 0.48, blue: 0.64),
-                                         dark: .init(red: 0.67, green: 0.60, blue: 0.78))
+    nonisolated(unsafe) static let jaySleepFallback = Color(uiColor: UIColor(
+        light: UIColor(red: 0.55, green: 0.48, blue: 0.64, alpha: 1),
+        dark:  UIColor(red: 0.67, green: 0.60, blue: 0.78, alpha: 1)
+    ))
     /// Sage green - diaper
-    static let jayDiaperFallback = Color(light: .init(red: 0.48, green: 0.64, blue: 0.56),
-                                          dark: .init(red: 0.58, green: 0.78, blue: 0.68))
+    nonisolated(unsafe) static let jayDiaperFallback = Color(uiColor: UIColor(
+        light: UIColor(red: 0.48, green: 0.64, blue: 0.56, alpha: 1),
+        dark:  UIColor(red: 0.58, green: 0.78, blue: 0.68, alpha: 1)
+    ))
     /// Olive - tummy time
-    static let jayTummyTimeFallback = Color(light: .init(red: 0.55, green: 0.66, blue: 0.44),
-                                             dark: .init(red: 0.65, green: 0.78, blue: 0.55))
+    nonisolated(unsafe) static let jayTummyTimeFallback = Color(uiColor: UIColor(
+        light: UIColor(red: 0.55, green: 0.66, blue: 0.44, alpha: 1),
+        dark:  UIColor(red: 0.65, green: 0.78, blue: 0.55, alpha: 1)
+    ))
     /// Dusty rose - temperature
-    static let jayTemperatureFallback = Color(light: .init(red: 0.77, green: 0.48, blue: 0.48),
-                                               dark: .init(red: 0.85, green: 0.58, blue: 0.58))
+    nonisolated(unsafe) static let jayTemperatureFallback = Color(uiColor: UIColor(
+        light: UIColor(red: 0.77, green: 0.48, blue: 0.48, alpha: 1),
+        dark:  UIColor(red: 0.85, green: 0.58, blue: 0.58, alpha: 1)
+    ))
     /// Warm gold - notes
-    static let jayNotesFallback = Color(light: .init(red: 0.77, green: 0.66, blue: 0.30),
-                                         dark: .init(red: 0.85, green: 0.75, blue: 0.42))
+    nonisolated(unsafe) static let jayNotesFallback = Color(uiColor: UIColor(
+        light: UIColor(red: 0.77, green: 0.66, blue: 0.30, alpha: 1),
+        dark:  UIColor(red: 0.85, green: 0.75, blue: 0.42, alpha: 1)
+    ))
 
     /// Accent salmon/rose
-    static let jayAccent = Color(light: .init(red: 0.83, green: 0.56, blue: 0.56),
-                                  dark: .init(red: 0.88, green: 0.65, blue: 0.65))
+    nonisolated(unsafe) static let jayAccent = Color(uiColor: UIColor(
+        light: UIColor(red: 0.83, green: 0.56, blue: 0.56, alpha: 1),
+        dark:  UIColor(red: 0.88, green: 0.65, blue: 0.65, alpha: 1)
+    ))
 
     /// Warm off-white background
-    static let jayBackground = Color(light: .init(red: 0.98, green: 0.97, blue: 0.96),
-                                      dark: .init(red: 0.11, green: 0.11, blue: 0.12))
+    nonisolated(unsafe) static let jayBackground = Color(uiColor: UIColor(
+        light: UIColor(red: 0.98, green: 0.97, blue: 0.96, alpha: 1),
+        dark:  UIColor(red: 0.11, green: 0.11, blue: 0.12, alpha: 1)
+    ))
 
     /// Card background - slightly elevated
-    static let jayCardBackground = Color(light: .init(red: 1.0, green: 0.99, blue: 0.98),
-                                          dark: .init(red: 0.15, green: 0.15, blue: 0.16))
+    nonisolated(unsafe) static let jayCardBackground = Color(uiColor: UIColor(
+        light: UIColor(red: 1.0,  green: 0.99, blue: 0.98, alpha: 1),
+        dark:  UIColor(red: 0.15, green: 0.15, blue: 0.16, alpha: 1)
+    ))
 
     /// Nap color (warm sun)
-    static let jayNap = Color(light: .init(red: 0.85, green: 0.65, blue: 0.35),
-                               dark: .init(red: 0.90, green: 0.72, blue: 0.45))
+    nonisolated(unsafe) static let jayNap = Color(uiColor: UIColor(
+        light: UIColor(red: 0.85, green: 0.65, blue: 0.35, alpha: 1),
+        dark:  UIColor(red: 0.90, green: 0.72, blue: 0.45, alpha: 1)
+    ))
 
     // MARK: - Breast feeding variants
-    static let jayBreastFeeding = Color(light: .init(red: 0.78, green: 0.52, blue: 0.60),
-                                         dark: .init(red: 0.85, green: 0.62, blue: 0.70))
+    nonisolated(unsafe) static let jayBreastFeeding = Color(uiColor: UIColor(
+        light: UIColor(red: 0.78, green: 0.52, blue: 0.60, alpha: 1),
+        dark:  UIColor(red: 0.85, green: 0.62, blue: 0.70, alpha: 1)
+    ))
+}
 
-    // MARK: - Adaptive Color Helper
-    init(light: Color, dark: Color) {
-        self.init(uiColor: UIColor { traits in
-            traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
-        })
+// MARK: - Adaptive UIColor helper (nonisolated, safe for static initializers)
+extension UIColor {
+    convenience init(light: UIColor, dark: UIColor) {
+        self.init { traits in
+            traits.userInterfaceStyle == .dark ? dark : light
+        }
     }
 }
 
@@ -105,8 +131,9 @@ nonisolated enum JayColors {
     static func diaperColor(wet: Bool, solid: Bool) -> Color {
         if wet && solid { return .jayDiaperFallback }
         if wet { return .jayFeedingFallback }
-        if solid { return Color(light: .init(red: 0.60, green: 0.50, blue: 0.38),
-                                dark: .init(red: 0.72, green: 0.60, blue: 0.48)) }
+        if solid { return Color(uiColor: UIColor(
+                                light: UIColor(red: 0.60, green: 0.50, blue: 0.38, alpha: 1),
+                                dark:  UIColor(red: 0.72, green: 0.60, blue: 0.48, alpha: 1))) }
         return .secondary
     }
 
