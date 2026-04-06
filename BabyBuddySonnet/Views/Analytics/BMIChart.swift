@@ -25,14 +25,14 @@ struct BMIChart: View {
                             y: .value("BMI", m.bmi),
                             series: .value("Series", "BMI")
                         )
-                        .foregroundStyle(.teal)
+                        .foregroundStyle(Color.jayDiaperFallback)
                         .lineStyle(StrokeStyle(lineWidth: 2))
 
                         PointMark(
                             x: .value("Month", month),
                             y: .value("BMI", m.bmi)
                         )
-                        .foregroundStyle(.teal)
+                        .foregroundStyle(Color.jayDiaperFallback)
                         .symbolSize(40)
                     }
                 }

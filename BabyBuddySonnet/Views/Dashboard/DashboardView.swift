@@ -89,7 +89,7 @@ struct DashboardView: View {
                         // Sleep summary
                         HStack {
                             Image(systemName: "moon.fill")
-                                .foregroundStyle(.purple)
+                                .foregroundStyle(Color.jaySleepFallback)
                             Text("\(theme.dashboardSleepTodayLabel) \(DateFormatting.formatMinutesToDuration(viewModel.todaySleepMinutes))")
                                 .font(.subheadline)
                             Spacer()
@@ -117,25 +117,25 @@ struct DashboardView: View {
                             NavigationLink {
                                 TimelineTabView(childID: child.id)
                             } label: {
-                                activityNavRow("Timeline", icon: "clock.arrow.circlepath", color: .indigo)
+                                activityNavRow("Timeline", icon: "clock.arrow.circlepath", color: .jayAccent)
                             }
 
                             NavigationLink {
                                 TummyTimeView(childID: child.id)
                             } label: {
-                                activityNavRow("Tummy Time", icon: "figure.play", color: .green)
+                                activityNavRow("Tummy Time", icon: "figure.play", color: .jayTummyTimeFallback)
                             }
 
                             NavigationLink {
                                 TemperatureView(childID: child.id)
                             } label: {
-                                activityNavRow("Temperature", icon: "thermometer.medium", color: .red)
+                                activityNavRow("Temperature", icon: "thermometer.medium", color: .jayTemperatureFallback)
                             }
 
                             NavigationLink {
                                 NotesView(childID: child.id)
                             } label: {
-                                activityNavRow("Notes", icon: "note.text", color: .yellow)
+                                activityNavRow("Notes", icon: "note.text", color: .jayNotesFallback)
                             }
                         }
                         .padding(.horizontal)
@@ -370,25 +370,25 @@ struct DashboardView: View {
 
     private var fabItems: [FABItem] {
         [
-            FABItem(label: theme.quickActionFeedingLabel, icon: theme.feedingTabIcon, color: .blue) {
+            FABItem(label: theme.quickActionFeedingLabel, icon: theme.feedingTabIcon, color: .jayFeedingFallback) {
                 showFeedingForm = true
             },
-            FABItem(label: theme.quickActionPumpingLabel, icon: theme.pumpingTabIcon, color: .orange) {
+            FABItem(label: theme.quickActionPumpingLabel, icon: theme.pumpingTabIcon, color: .jayPumpingFallback) {
                 showPumpingForm = true
             },
-            FABItem(label: theme.quickActionSleepLabel, icon: theme.sleepTabIcon, color: .purple) {
+            FABItem(label: theme.quickActionSleepLabel, icon: theme.sleepTabIcon, color: .jaySleepFallback) {
                 showSleepForm = true
             },
-            FABItem(label: theme.quickActionDiaperLabel, icon: theme.diaperTabIcon, color: .teal) {
+            FABItem(label: theme.quickActionDiaperLabel, icon: theme.diaperTabIcon, color: .jayDiaperFallback) {
                 showDiaperForm = true
             },
-            FABItem(label: "Tummy Time", icon: "figure.play", color: .green) {
+            FABItem(label: "Tummy Time", icon: "figure.play", color: .jayTummyTimeFallback) {
                 showTummyTimeForm = true
             },
-            FABItem(label: "Temperature", icon: "thermometer.medium", color: .red) {
+            FABItem(label: "Temperature", icon: "thermometer.medium", color: .jayTemperatureFallback) {
                 showTemperatureForm = true
             },
-            FABItem(label: "Note", icon: "note.text", color: .yellow) {
+            FABItem(label: "Note", icon: "note.text", color: .jayNotesFallback) {
                 showNoteForm = true
             },
         ]

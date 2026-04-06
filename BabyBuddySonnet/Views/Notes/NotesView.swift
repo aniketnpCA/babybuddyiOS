@@ -39,7 +39,7 @@ struct NotesView: View {
             }
             .navigationTitle("Notes")
             .overlay(alignment: .bottomTrailing) {
-                FloatingActionButton(color: .yellow) {
+                FloatingActionButton(color: .jayNotesFallback) {
                     showForm = true
                 }
             }

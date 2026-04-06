@@ -35,14 +35,14 @@ struct FeedingDurationsChart: View {
                                     x: .value("Date", date),
                                     y: .value("Minutes", day.avgMinutes)
                                 )
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Color.jayFeedingFallback)
                                 .lineStyle(StrokeStyle(lineWidth: 2))
 
                                 PointMark(
                                     x: .value("Date", date),
                                     y: .value("Minutes", day.avgMinutes)
                                 )
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Color.jayFeedingFallback)
                                 .symbolSize(15)
                             }
                         }
@@ -81,7 +81,7 @@ struct FeedingDurationsChart: View {
                                     x: .value("Date", date),
                                     y: .value("Count", day.count)
                                 )
-                                .foregroundStyle(.cyan.gradient)
+                                .foregroundStyle(Color.jayDiaperFallback.gradient)
                                 .cornerRadius(3)
                             }
                         }

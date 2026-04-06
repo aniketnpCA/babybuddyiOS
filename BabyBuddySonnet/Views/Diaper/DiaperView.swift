@@ -26,7 +26,7 @@ struct DiaperView: View {
                         VStack(spacing: 4) {
                             Text("\(viewModel.todayTotalCount)")
                                 .font(.title.bold())
-                                .foregroundStyle(.teal)
+                                .foregroundStyle(Color.jayDiaperFallback)
                             Text("total")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -55,8 +55,8 @@ struct DiaperView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .background(Color.jayDiaperFallback.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                     .padding(.horizontal)
 
                     Picker("Period", selection: $selectedTab) {
@@ -79,7 +79,7 @@ struct DiaperView: View {
             }
             .navigationTitle(theme.diaperNavigationTitle)
             .overlay(alignment: .bottomTrailing) {
-                FloatingActionButton(color: .teal) {
+                FloatingActionButton(color: .jayDiaperFallback) {
                     showForm = true
                 }
             }

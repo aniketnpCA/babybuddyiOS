@@ -21,10 +21,10 @@ nonisolated enum TimerActivityType: String, CaseIterable, Identifiable, Sendable
 
     var color: Color {
         switch self {
-        case .feeding: .blue
-        case .sleep: .purple
-        case .pumping: .orange
-        case .tummyTime: .green
+        case .feeding: .jayFeedingFallback
+        case .sleep: .jaySleepFallback
+        case .pumping: .jayPumpingFallback
+        case .tummyTime: .jayTummyTimeFallback
         case .none: .secondary
         }
     }

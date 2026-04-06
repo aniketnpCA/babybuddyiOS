@@ -34,25 +34,25 @@ struct FeedingIntervalsChart: View {
                                 x: .value("Date", date),
                                 y: .value("Hours", day.avgHours)
                             )
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.jayFeedingFallback)
                             .lineStyle(StrokeStyle(lineWidth: 2))
 
                             PointMark(
                                 x: .value("Date", date),
                                 y: .value("Hours", day.avgHours)
                             )
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(Color.jayFeedingFallback)
                             .symbolSize(15)
                         }
                     }
 
                     RuleMark(y: .value("Average", overallAvg))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.jayPumpingFallback)
                         .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
                         .annotation(position: .top, alignment: .trailing) {
                             Text("Avg: \(String(format: "%.1f", overallAvg))h")
                                 .font(.caption2)
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.jayPumpingFallback)
                         }
                 }
                 .chartYAxisLabel("hours")

@@ -32,7 +32,7 @@ struct NextExpectedCard: View {
             items.append(NextExpectedItem(
                 category: theme.nextFeedingCategory,
                 icon: theme.feedingTabIcon,
-                color: .blue,
+                color: .jayFeedingFallback,
                 expectedTime: time
             ))
         }
@@ -41,7 +41,7 @@ struct NextExpectedCard: View {
             items.append(NextExpectedItem(
                 category: theme.nextPumpingCategory,
                 icon: theme.pumpingTabIcon,
-                color: .orange,
+                color: .jayPumpingFallback,
                 expectedTime: time
             ))
         }
@@ -50,7 +50,7 @@ struct NextExpectedCard: View {
             items.append(NextExpectedItem(
                 category: theme.nextDiaperCategory,
                 icon: theme.diaperTabIcon,
-                color: .green,
+                color: .jayDiaperFallback,
                 expectedTime: time
             ))
         }
@@ -150,9 +150,9 @@ private enum UrgencyLevel {
 
     var color: Color {
         switch self {
-        case .ok: return .green
-        case .soon: return .orange
-        case .overdue: return .red
+        case .ok: return .jayTummyTimeFallback
+        case .soon: return .jayPumpingFallback
+        case .overdue: return .jayTemperatureFallback
         }
     }
 }

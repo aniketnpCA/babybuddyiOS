@@ -34,7 +34,7 @@ struct SleepView: View {
                         VStack(spacing: 4) {
                             Text(DateFormatting.formatMinutesToDuration(viewModel.todayTotalMinutes))
                                 .font(.title.bold())
-                                .foregroundStyle(.purple)
+                                .foregroundStyle(Color.jaySleepFallback)
                             Text("total")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -56,8 +56,8 @@ struct SleepView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .background(Color.jaySleepFallback.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                     .padding(.horizontal)
 
                     Picker("Period", selection: $selectedTab) {
@@ -80,7 +80,7 @@ struct SleepView: View {
             }
             .navigationTitle(theme.sleepNavigationTitle)
             .overlay(alignment: .bottomTrailing) {
-                FloatingActionButton(color: .purple) {
+                FloatingActionButton(color: .jaySleepFallback) {
                     showForm = true
                 }
             }

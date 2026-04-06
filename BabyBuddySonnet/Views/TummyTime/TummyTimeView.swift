@@ -24,7 +24,7 @@ struct TummyTimeView: View {
                         VStack(spacing: 4) {
                             Text(DateFormatting.formatMinutesToDuration(viewModel.todayTotalMinutes))
                                 .font(.title.bold())
-                                .foregroundStyle(.green)
+                                .foregroundStyle(Color.jayTummyTimeFallback)
                             Text("today")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -63,7 +63,7 @@ struct TummyTimeView: View {
             }
             .navigationTitle("Tummy Time")
             .overlay(alignment: .bottomTrailing) {
-                FloatingActionButton(color: .green) {
+                FloatingActionButton(color: .jayTummyTimeFallback) {
                     showForm = true
                 }
             }

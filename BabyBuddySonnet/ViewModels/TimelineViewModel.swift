@@ -115,7 +115,7 @@ final class TimelineViewModel {
                     time: start,
                     endTime: end,
                     icon: f.feedingMethod?.sfSymbol ?? "drop.fill",
-                    color: AppConstants.feedingMethodColors[f.feedingMethod ?? .bottle] ?? .blue
+                    color: JayColors.feedingMethodColor(f.feedingMethod ?? .bottle)
                 ))
             }
 
@@ -133,7 +133,7 @@ final class TimelineViewModel {
                     time: start,
                     endTime: end,
                     icon: "drop.triangle.fill",
-                    color: AppConstants.milkCategoryColors[p.milkCategory] ?? .orange
+                    color: .jayPumpingFallback
                 ))
             }
 
@@ -150,7 +150,7 @@ final class TimelineViewModel {
                     time: start,
                     endTime: end,
                     icon: s.nap ? "sun.max.fill" : "moon.fill",
-                    color: s.nap ? .orange : .purple
+                    color: JayColors.sleepColor(isNap: s.nap)
                 ))
             }
 
@@ -169,7 +169,7 @@ final class TimelineViewModel {
                     time: time,
                     endTime: nil,
                     icon: d.wet && d.solid ? "drop.circle.fill" : d.wet ? "drop.fill" : "circle.fill",
-                    color: d.wet && d.solid ? .teal : d.wet ? .cyan : .brown
+                    color: JayColors.diaperColor(wet: d.wet, solid: d.solid)
                 ))
             }
 
@@ -187,7 +187,7 @@ final class TimelineViewModel {
                     time: start,
                     endTime: end,
                     icon: "figure.play",
-                    color: .green
+                    color: .jayTummyTimeFallback
                 ))
             }
 
@@ -203,7 +203,7 @@ final class TimelineViewModel {
                     time: time,
                     endTime: nil,
                     icon: "thermometer.medium",
-                    color: t.temperature >= 100.4 ? .red : t.temperature >= 99.5 ? .orange : .green
+                    color: t.temperature >= 100.4 ? .jayTemperatureFallback : t.temperature >= 99.5 ? .jayPumpingFallback : .jayTummyTimeFallback
                 ))
             }
 
@@ -219,7 +219,7 @@ final class TimelineViewModel {
                     time: time,
                     endTime: nil,
                     icon: "note.text",
-                    color: .yellow
+                    color: .jayNotesFallback
                 ))
             }
 

@@ -40,6 +40,12 @@ struct PumpingFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                FormSheetHeader(
+                    icon: "drop.triangle.fill",
+                    color: .jayPumpingFallback,
+                    title: isEditing ? theme.editPumpingTitle : theme.logPumpingTitle
+                )
+
                 Section("Amount") {
                     AmountStepperView(amount: $amount)
                         .frame(maxWidth: .infinity)

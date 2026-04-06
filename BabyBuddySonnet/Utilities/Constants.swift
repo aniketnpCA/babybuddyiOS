@@ -39,17 +39,17 @@ nonisolated enum AppConstants {
     ]
 
     static let feedingMethodColors: [FeedingMethod: Color] = [
-        .bottle: .blue,
-        .leftBreast: .pink,
-        .rightBreast: .pink,
-        .bothBreasts: .pink,
-        .parentFed: .orange,
-        .selfFed: .green,
+        .bottle: .jayFeedingFallback,
+        .leftBreast: .jayBreastFeeding,
+        .rightBreast: .jayBreastFeeding,
+        .bothBreasts: .jayBreastFeeding,
+        .parentFed: .jayPumpingFallback,
+        .selfFed: .jayTummyTimeFallback,
     ]
 
     static let milkCategoryColors: [MilkCategory: Color] = [
-        .toBeConsumed: .orange,
-        .consumed: .blue,
-        .frozen: .cyan,
+        .toBeConsumed: .jayPumpingFallback,
+        .consumed: .jayFeedingFallback,
+        .frozen: .jayDiaperFallback,
     ]
 }

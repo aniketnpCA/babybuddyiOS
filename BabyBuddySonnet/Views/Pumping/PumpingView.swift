@@ -27,7 +27,7 @@ struct PumpingView: View {
                         VStack(spacing: 4) {
                             Text(String(format: "%.2f", viewModel.todayTotalOz))
                                 .font(.title.bold())
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.jayPumpingFallback)
                             Text(theme.pumpingOzStat)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -42,8 +42,8 @@ struct PumpingView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .background(Color.jayPumpingFallback.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                     .padding(.horizontal)
 
                     Picker("Period", selection: $selectedTab) {
@@ -66,7 +66,7 @@ struct PumpingView: View {
             }
             .navigationTitle(theme.pumpingNavigationTitle)
             .overlay(alignment: .bottomTrailing) {
-                FloatingActionButton(color: .orange) {
+                FloatingActionButton(color: .jayPumpingFallback) {
                     showForm = true
                 }
             }

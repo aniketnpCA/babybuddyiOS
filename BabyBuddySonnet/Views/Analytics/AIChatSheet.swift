@@ -119,7 +119,7 @@ struct AIChatSheet: View {
             VStack(spacing: 8) {
                 Image(systemName: "sparkles")
                     .font(.title)
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(Color.jaySleepFallback)
                 Text("Ask anything about your baby's data")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)

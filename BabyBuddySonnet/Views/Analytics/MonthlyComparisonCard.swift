@@ -108,7 +108,7 @@ struct MonthlyComparisonCard: View {
                     Text("New")
                 }
                 .font(.caption2)
-                .foregroundStyle(.green)
+                .foregroundStyle(Color.jayTummyTimeFallback)
             } else {
                 let change = ((current - previous) / previous) * 100
                 HStack(spacing: 2) {

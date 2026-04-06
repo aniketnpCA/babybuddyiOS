@@ -55,7 +55,7 @@ struct SleepTotalsChart: View {
                                 x: .value("Date", date),
                                 y: .value("Hours", day.hours)
                             )
-                            .foregroundStyle(.purple.opacity(0.5).gradient)
+                            .foregroundStyle(Color.jaySleepFallback.opacity(0.5).gradient)
                             .cornerRadius(3)
                         }
                     }
@@ -66,19 +66,19 @@ struct SleepTotalsChart: View {
                             x: .value("Date", point.date),
                             y: .value("Hours", point.hours)
                         )
-                        .foregroundStyle(.purple)
+                        .foregroundStyle(Color.jaySleepFallback)
                         .lineStyle(StrokeStyle(lineWidth: 2.5))
                     }
 
                     // Target line
                     if targetHours > 0 {
                         RuleMark(y: .value("Target", targetHours))
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.jayTummyTimeFallback)
                             .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
                             .annotation(position: .top, alignment: .trailing) {
                                 Text("Target: \(String(format: "%.0f", targetHours))h")
                                     .font(.caption2)
-                                    .foregroundStyle(.green)
+                                    .foregroundStyle(Color.jayTummyTimeFallback)
                             }
                     }
                 }

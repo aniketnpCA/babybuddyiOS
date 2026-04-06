@@ -59,9 +59,9 @@ struct ExpandableFloatingActionButton: View {
                         .font(.title2.weight(.semibold))
                         .foregroundStyle(.white)
                         .frame(width: 56, height: 56)
-                        .background(.blue, in: Circle())
+                        .background(Color.secondary, in: Circle())
                         .rotationEffect(.degrees(isExpanded ? 45 : 0))
-                        .shadow(color: .blue.opacity(0.4), radius: 8, x: 0, y: 4)
+                        .shadow(color: Color.primary.opacity(0.2), radius: 8, x: 0, y: 4)
                 }
             }
             .padding(.trailing, 20)

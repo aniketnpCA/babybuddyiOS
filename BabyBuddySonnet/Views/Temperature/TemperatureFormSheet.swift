@@ -35,6 +35,12 @@ struct TemperatureFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                FormSheetHeader(
+                    icon: "thermometer.medium",
+                    color: .jayTemperatureFallback,
+                    title: isEditing ? "Edit Temperature" : "Log Temperature"
+                )
+
                 Section("Temperature") {
                     HStack {
                         TextField("Temperature", text: $temperatureValue)

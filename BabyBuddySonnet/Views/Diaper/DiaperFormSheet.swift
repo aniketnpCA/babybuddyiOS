@@ -29,6 +29,12 @@ struct DiaperFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                FormSheetHeader(
+                    icon: isWet && isSolid ? "drop.circle.fill" : isWet ? "drop.fill" : isSolid ? "circle.fill" : "circle.dotted",
+                    color: JayColors.diaperColor(wet: isWet, solid: isSolid),
+                    title: isEditing ? theme.editDiaperTitle : theme.logDiaperTitle
+                )
+
                 Section("Type") {
                     Toggle(theme.diaperWetLabel, isOn: $isWet)
                     Toggle(theme.diaperSolidLabel, isOn: $isSolid)

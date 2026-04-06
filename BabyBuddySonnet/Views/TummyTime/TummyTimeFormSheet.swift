@@ -35,6 +35,12 @@ struct TummyTimeFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                FormSheetHeader(
+                    icon: "figure.play",
+                    color: .jayTummyTimeFallback,
+                    title: isEditing ? "Edit Tummy Time" : "Log Tummy Time"
+                )
+
                 Section("Time") {
                     DateTimePickerRow(label: "Start", date: $startTime)
                     DateTimePickerRow(label: "End", date: $endTime)

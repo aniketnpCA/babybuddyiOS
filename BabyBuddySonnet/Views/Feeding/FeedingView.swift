@@ -27,7 +27,7 @@ struct FeedingView: View {
                         VStack(spacing: 4) {
                             Text(String(format: "%.2f", viewModel.todayTotalOz))
                                 .font(.title.bold())
-                                .foregroundStyle(.blue)
+                                .foregroundStyle(Color.jayFeedingFallback)
                             Text("oz today")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
@@ -49,8 +49,8 @@ struct FeedingView: View {
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .background(.regularMaterial)
-                    .clipShape(RoundedRectangle(cornerRadius: 16))
+                    .background(Color.jayFeedingFallback.opacity(0.08))
+                    .clipShape(RoundedRectangle(cornerRadius: 20))
                     .padding(.horizontal)
 
                     Picker("Period", selection: $selectedTab) {
@@ -73,7 +73,7 @@ struct FeedingView: View {
             }
             .navigationTitle(theme.feedingNavigationTitle)
             .overlay(alignment: .bottomTrailing) {
-                FloatingActionButton(color: .blue) {
+                FloatingActionButton(color: .jayFeedingFallback) {
                     showForm = true
                 }
             }

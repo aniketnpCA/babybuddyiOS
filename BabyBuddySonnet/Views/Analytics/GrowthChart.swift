@@ -55,14 +55,14 @@ struct GrowthChart: View {
                         yStart: .value("P3", p.p3),
                         yEnd: .value("P97", p.p97)
                     )
-                    .foregroundStyle(.blue.opacity(0.08))
+                    .foregroundStyle(Color.jayFeedingFallback.opacity(0.08))
 
                     LineMark(
                         x: .value("Month", month),
                         y: .value("P50", p.p50),
                         series: .value("Series", "P50")
                     )
-                    .foregroundStyle(.blue.opacity(0.3))
+                    .foregroundStyle(Color.jayFeedingFallback.opacity(0.3))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
 
                     LineMark(
@@ -70,7 +70,7 @@ struct GrowthChart: View {
                         y: .value("P3", p.p3),
                         series: .value("Series", "P3")
                     )
-                    .foregroundStyle(.blue.opacity(0.15))
+                    .foregroundStyle(Color.jayFeedingFallback.opacity(0.15))
                     .lineStyle(StrokeStyle(lineWidth: 0.5))
 
                     LineMark(
@@ -78,7 +78,7 @@ struct GrowthChart: View {
                         y: .value("P97", p.p97),
                         series: .value("Series", "P97")
                     )
-                    .foregroundStyle(.blue.opacity(0.15))
+                    .foregroundStyle(Color.jayFeedingFallback.opacity(0.15))
                     .lineStyle(StrokeStyle(lineWidth: 0.5))
                 }
 
@@ -89,7 +89,7 @@ struct GrowthChart: View {
                         x: .value("Month", month),
                         y: .value("Weight", m.weightInKg)
                     )
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.jayFeedingFallback)
                     .symbolSize(40)
 
                     LineMark(
@@ -97,7 +97,7 @@ struct GrowthChart: View {
                         y: .value("Weight", m.weightInKg),
                         series: .value("Series", "Baby")
                     )
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(Color.jayFeedingFallback)
                     .lineStyle(StrokeStyle(lineWidth: 2))
                 }
             }
@@ -132,14 +132,14 @@ struct GrowthChart: View {
                         yStart: .value("P3", p.p3),
                         yEnd: .value("P97", p.p97)
                     )
-                    .foregroundStyle(.green.opacity(0.08))
+                    .foregroundStyle(Color.jayTummyTimeFallback.opacity(0.08))
 
                     LineMark(
                         x: .value("Month", month),
                         y: .value("P50", p.p50),
                         series: .value("Series", "P50")
                     )
-                    .foregroundStyle(.green.opacity(0.3))
+                    .foregroundStyle(Color.jayTummyTimeFallback.opacity(0.3))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                 }
 
@@ -149,7 +149,7 @@ struct GrowthChart: View {
                         x: .value("Month", month),
                         y: .value("Height", m.height)
                     )
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.jayTummyTimeFallback)
                     .symbolSize(40)
 
                     LineMark(
@@ -157,7 +157,7 @@ struct GrowthChart: View {
                         y: .value("Height", m.height),
                         series: .value("Series", "Baby")
                     )
-                    .foregroundStyle(.green)
+                    .foregroundStyle(Color.jayTummyTimeFallback)
                     .lineStyle(StrokeStyle(lineWidth: 2))
                 }
             }
@@ -192,14 +192,14 @@ struct GrowthChart: View {
                         yStart: .value("P3", p.p3),
                         yEnd: .value("P97", p.p97)
                     )
-                    .foregroundStyle(.purple.opacity(0.08))
+                    .foregroundStyle(Color.jaySleepFallback.opacity(0.08))
 
                     LineMark(
                         x: .value("Month", month),
                         y: .value("P50", p.p50),
                         series: .value("Series", "P50")
                     )
-                    .foregroundStyle(.purple.opacity(0.3))
+                    .foregroundStyle(Color.jaySleepFallback.opacity(0.3))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
                 }
 
@@ -209,7 +209,7 @@ struct GrowthChart: View {
                         x: .value("Month", month),
                         y: .value("HC", m.headCircumference)
                     )
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(Color.jaySleepFallback)
                     .symbolSize(40)
 
                     LineMark(
@@ -217,7 +217,7 @@ struct GrowthChart: View {
                         y: .value("HC", m.headCircumference),
                         series: .value("Series", "Baby")
                     )
-                    .foregroundStyle(.purple)
+                    .foregroundStyle(Color.jaySleepFallback)
                     .lineStyle(StrokeStyle(lineWidth: 2))
                 }
             }

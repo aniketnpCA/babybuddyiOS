@@ -4,20 +4,20 @@ struct NoteRowView: View {
     let note: Note
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             Image(systemName: "note.text")
-                .font(.body)
-                .foregroundStyle(.yellow)
-                .frame(width: 28)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 42, height: 42)
+                .background(Color.jayNotesFallback, in: Circle())
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(DateFormatting.formatTime(note.time))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
                 Text(note.note)
                     .font(.subheadline)
                     .lineLimit(2)
-
-                Text(DateFormatting.formatTime(note.time))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Spacer()
@@ -26,6 +26,6 @@ struct NoteRowView: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
     }
 }

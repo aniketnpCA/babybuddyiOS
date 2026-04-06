@@ -53,14 +53,14 @@ struct PumpingAmountsChart: View {
                             x: .value("Date", point.date),
                             y: .value("oz", point.oz)
                         )
-                        .foregroundStyle(.orange.opacity(0.2).gradient)
+                        .foregroundStyle(Color.jayPumpingFallback.opacity(0.2).gradient)
 
                         LineMark(
                             x: .value("Date", point.date),
                             y: .value("oz", point.oz),
                             series: .value("Series", "Daily")
                         )
-                        .foregroundStyle(.orange.opacity(0.5))
+                        .foregroundStyle(Color.jayPumpingFallback.opacity(0.5))
                         .lineStyle(StrokeStyle(lineWidth: 1))
                     }
 
@@ -71,7 +71,7 @@ struct PumpingAmountsChart: View {
                             y: .value("oz", point.oz),
                             series: .value("Series", "7-day Avg")
                         )
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.jayPumpingFallback)
                         .lineStyle(StrokeStyle(lineWidth: 2.5))
                     }
                 }

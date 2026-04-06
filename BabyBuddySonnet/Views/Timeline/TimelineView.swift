@@ -129,7 +129,7 @@ struct TimelineTabView: View {
     }
 }
 
-// MARK: - Timeline Entry Row
+// MARK: - Timeline Entry Row (Structured-style)
 
 struct TimelineEntryRow: View {
     let entry: TimelineEntry
@@ -142,67 +142,60 @@ struct TimelineEntryRow: View {
             // Main entry
             HStack(alignment: .top, spacing: 0) {
                 // Time column
-                VStack(spacing: 2) {
-                    Text(DateFormatting.formatTimeFromDate(entry.time))
-                        .font(.caption.weight(.medium).monospacedDigit())
-                        .foregroundStyle(.secondary)
-                    if let end = entry.endTime {
-                        Text(DateFormatting.formatTimeFromDate(end))
-                            .font(.caption2.monospacedDigit())
-                            .foregroundStyle(.tertiary)
-                    }
-                }
-                .frame(width: 58, alignment: .trailing)
+                Text(DateFormatting.formatTimeFromDate(entry.time))
+                    .font(.caption.weight(.medium).monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .frame(width: 54, alignment: .trailing)
 
-                // Timeline rail with icon
+                // Timeline rail: icon circle + duration pill
                 VStack(spacing: 0) {
-                    // Line above icon
+                    // Connector above
                     if !isFirst {
-                        Rectangle()
-                            .fill(entry.color.opacity(0.3))
-                            .frame(width: 2, height: 8)
+                        Capsule()
+                            .fill(Color.secondary.opacity(0.12))
+                            .frame(width: 3, height: 6)
                     } else {
-                        Spacer().frame(width: 2, height: 8)
+                        Spacer().frame(height: 6)
                     }
 
-                    // Icon bubble
+                    // Icon circle (large, filled, white icon)
                     ZStack {
                         Circle()
-                            .fill(entry.color.opacity(0.15))
-                            .frame(width: 40, height: 40)
+                            .fill(entry.color)
+                            .frame(width: 44, height: 44)
                         Image(systemName: entry.icon)
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(entry.color)
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(.white)
                     }
 
-                    // Duration bar (for activities with duration)
+                    // Duration pill (Structured-style capsule below icon)
                     if let mins = entry.durationMinutes, mins > 0 {
-                        RoundedRectangle(cornerRadius: 3)
-                            .fill(entry.color.opacity(0.25))
-                            .frame(width: 6, height: durationBarHeight(minutes: mins))
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(entry.color.opacity(0.5))
+                            .frame(width: 24, height: durationPillHeight(minutes: mins))
                     }
 
-                    // Line below icon
+                    // Connector below
                     if !isLast || intervalFromPrevious != nil {
-                        Rectangle()
-                            .fill(Color.secondary.opacity(0.15))
-                            .frame(width: 2, height: 8)
+                        Capsule()
+                            .fill(Color.secondary.opacity(0.12))
+                            .frame(width: 3, height: 6)
                     } else {
-                        Spacer().frame(width: 2, height: 8)
+                        Spacer().frame(height: 6)
                     }
                 }
-                .frame(width: 48)
+                .frame(width: 52)
 
                 // Content card
                 VStack(alignment: .leading, spacing: 4) {
                     if let mins = entry.durationMinutes {
                         Text("\(DateFormatting.formatTimeFromDate(entry.time)) \u{2013} \(DateFormatting.formatTimeFromDate(entry.endTime!)) (\(DateFormatting.formatMinutesToDuration(mins)))")
-                            .font(.caption)
+                            .font(.caption.monospacedDigit())
                             .foregroundStyle(.secondary)
                     }
 
                     Text(entry.title)
-                        .font(.subheadline.weight(.semibold))
+                        .font(.subheadline.weight(.bold))
 
                     if !entry.subtitle.isEmpty {
                         Text(entry.subtitle)
@@ -212,40 +205,40 @@ struct TimelineEntryRow: View {
                     }
                 }
                 .padding(.vertical, 10)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, 14)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(.regularMaterial)
+                    RoundedRectangle(cornerRadius: 14)
+                        .fill(entry.color.opacity(0.06))
                 )
-                .padding(.leading, 4)
+                .padding(.leading, 6)
             }
 
             // Interval indicator between this entry and the next
             if let interval = intervalFromPrevious {
                 HStack(spacing: 0) {
-                    Spacer().frame(width: 58)
+                    Spacer().frame(width: 54)
 
                     VStack(spacing: 0) {
-                        Rectangle()
-                            .fill(Color.secondary.opacity(0.15))
-                            .frame(width: 2, height: 12)
+                        Capsule()
+                            .fill(Color.secondary.opacity(0.12))
+                            .frame(width: 3, height: 10)
 
                         Text(interval)
                             .font(.caption2.weight(.medium).monospacedDigit())
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 3)
+                            .padding(.vertical, 4)
                             .background(
                                 Capsule()
-                                    .fill(Color.secondary.opacity(0.08))
+                                    .fill(Color.secondary.opacity(0.06))
                             )
 
-                        Rectangle()
-                            .fill(Color.secondary.opacity(0.15))
-                            .frame(width: 2, height: 12)
+                        Capsule()
+                            .fill(Color.secondary.opacity(0.12))
+                            .frame(width: 3, height: 10)
                     }
-                    .frame(width: 48)
+                    .frame(width: 52)
 
                     Spacer()
                 }
@@ -253,9 +246,10 @@ struct TimelineEntryRow: View {
         }
     }
 
-    private func durationBarHeight(minutes: Int) -> CGFloat {
-        // Scale: 5 minutes = 8pt, max at 60pt for 60+ minutes
-        let scaled = CGFloat(minutes) * 1.0
-        return min(max(scaled, 4), 60)
+    private func durationPillHeight(minutes: Int) -> CGFloat {
+        // Structured-style: scale duration visually
+        // 5 min = 10pt, 15 min = 20pt, 30 min = 35pt, 60+ min = 55pt
+        let scaled = 6.0 + CGFloat(minutes) * 0.8
+        return min(max(scaled, 8), 55)
     }
 }

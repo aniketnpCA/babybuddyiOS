@@ -12,7 +12,7 @@ struct DailySurplusCard: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "arrow.up.arrow.down")
-                    .foregroundStyle(.orange)
+                    .foregroundStyle(Color.jayPumpingFallback)
                 Text(theme.surplusCardTitle)
                     .font(.headline)
                 Spacer()
@@ -25,7 +25,7 @@ struct DailySurplusCard: View {
                         .foregroundStyle(.secondary)
                     Text(String(format: "%.1f oz", pumpedOz))
                         .font(.title3.bold())
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.jayPumpingFallback)
                 }
 
                 VStack(alignment: .leading, spacing: 4) {
@@ -34,7 +34,7 @@ struct DailySurplusCard: View {
                         .foregroundStyle(.secondary)
                     Text(String(format: "%.1f oz", consumedOz))
                         .font(.title3.bold())
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.jayFeedingFallback)
                 }
 
                 Spacer()
@@ -45,12 +45,12 @@ struct DailySurplusCard: View {
                         .foregroundStyle(.secondary)
                     Text(String(format: "%+.1f oz", surplus))
                         .font(.title3.bold())
-                        .foregroundStyle(surplus >= 0 ? .green : .red)
+                        .foregroundStyle(surplus >= 0 ? Color.jayTummyTimeFallback : Color.jayTemperatureFallback)
                 }
             }
         }
         .padding()
-        .background(.regularMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .background(Color.jayPumpingFallback.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 20))
     }
 }

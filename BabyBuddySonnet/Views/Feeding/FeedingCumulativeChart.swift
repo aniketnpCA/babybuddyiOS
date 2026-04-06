@@ -97,7 +97,7 @@ struct FeedingCumulativeChart: View {
                     y: .value("Avg oz", point.y),
                     series: .value("Series", "\(data.averageDays)-day avg")
                 )
-                .foregroundStyle(.orange)
+                .foregroundStyle(Color.jayPumpingFallback)
                 .lineStyle(StrokeStyle(lineWidth: 2))
                 .interpolationMethod(.stepEnd)
             }
@@ -109,7 +109,7 @@ struct FeedingCumulativeChart: View {
                     y: .value("Today oz", point.y),
                     series: .value("Series", "Today")
                 )
-                .foregroundStyle(.blue)
+                .foregroundStyle(Color.jayFeedingFallback)
                 .lineStyle(StrokeStyle(lineWidth: 2.5))
                 .interpolationMethod(.stepEnd)
             }

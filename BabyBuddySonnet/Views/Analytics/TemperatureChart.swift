@@ -28,7 +28,7 @@ struct TemperatureChart: View {
                         yStart: .value("Low Normal", 97.0),
                         yEnd: .value("High Normal", 100.4)
                     )
-                    .foregroundStyle(.green.opacity(0.08))
+                    .foregroundStyle(Color.jayTummyTimeFallback.opacity(0.08))
 
                     // Fever threshold
                     RuleMark(y: .value("Fever", 100.4))
@@ -52,7 +52,7 @@ struct TemperatureChart: View {
                             x: .value("Date", reading.date),
                             y: .value("Temp", reading.value)
                         )
-                        .foregroundStyle(.blue.opacity(0.5))
+                        .foregroundStyle(Color.jayFeedingFallback.opacity(0.5))
                         .lineStyle(StrokeStyle(lineWidth: 1.5))
                     }
                 }

@@ -4,20 +4,24 @@ struct TummyTimeRowView: View {
     let tummyTime: TummyTime
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             Image(systemName: "figure.play")
-                .font(.body)
-                .foregroundStyle(.green)
-                .frame(width: 28)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 42, height: 42)
+                .background(Color.jayTummyTimeFallback, in: Circle())
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text("\(DateFormatting.formatTime(tummyTime.start)) \u{2013} \(DateFormatting.formatTime(tummyTime.end))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+
                 HStack(spacing: 6) {
-                    Text("\(DateFormatting.formatTime(tummyTime.start)) – \(DateFormatting.formatTime(tummyTime.end))")
-                        .font(.subheadline.weight(.medium))
-
+                    Text("Tummy Time")
+                        .font(.subheadline.weight(.bold))
                     if let duration = durationMinutes {
-                        Text("(\(duration) min)")
-                            .font(.caption)
+                        Text("\(duration) min")
+                            .font(.caption.weight(.medium))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -25,7 +29,7 @@ struct TummyTimeRowView: View {
                 if let milestone = tummyTime.milestone, !milestone.isEmpty {
                     Text(milestone)
                         .font(.caption)
-                        .foregroundStyle(.green)
+                        .foregroundStyle(Color.jayTummyTimeFallback)
                         .lineLimit(1)
                 }
             }
@@ -36,7 +40,7 @@ struct TummyTimeRowView: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
     }
 
     private var durationMinutes: Int? {

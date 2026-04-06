@@ -32,6 +32,12 @@ struct NoteFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                FormSheetHeader(
+                    icon: "note.text",
+                    color: .jayNotesFallback,
+                    title: isEditing ? "Edit Note" : "Add Note"
+                )
+
                 Section("Note") {
                     TextEditor(text: $noteText)
                         .frame(minHeight: 100)

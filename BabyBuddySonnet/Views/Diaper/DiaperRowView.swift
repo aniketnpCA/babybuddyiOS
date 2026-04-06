@@ -12,16 +12,24 @@ struct DiaperRowView: View {
         return "Empty"
     }
 
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: iconForType)
-                .font(.title3)
-                .foregroundStyle(colorForType)
-                .frame(width: 32)
+    private var entryColor: Color {
+        JayColors.diaperColor(wet: change.wet, solid: change.solid)
+    }
 
-            VStack(alignment: .leading, spacing: 2) {
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: iconForType)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 42, height: 42)
+                .background(entryColor, in: Circle())
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(DateFormatting.formatTime(change.time))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
                 Text(typeDescription)
-                    .font(.subheadline.weight(.medium))
+                    .font(.subheadline.weight(.bold))
                 if change.solid, let stoolColor = change.stoolColor {
                     HStack(spacing: 4) {
                         Circle()
@@ -32,20 +40,17 @@ struct DiaperRowView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                if let amount = change.amount, amount > 0 {
-                    Text(String(format: "%.1f", amount))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
             }
 
             Spacer()
 
-            Text(DateFormatting.formatTime(change.time))
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            if let amount = change.amount, amount > 0 {
+                Text(String(format: "%.1f", amount))
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(.secondary)
+            }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 
     private var iconForType: String {
@@ -53,13 +58,6 @@ struct DiaperRowView: View {
         if change.wet { return "drop.fill" }
         if change.solid { return "circle.fill" }
         return "circle.dotted"
-    }
-
-    private var colorForType: Color {
-        if change.wet && change.solid { return .teal }
-        if change.wet { return .cyan }
-        if change.solid { return .brown }
-        return .gray
     }
 
     private func swiftUIColor(for color: StoolColor) -> Color {

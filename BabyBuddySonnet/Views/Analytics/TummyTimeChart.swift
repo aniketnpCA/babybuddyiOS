@@ -29,7 +29,7 @@ struct TummyTimeChart: View {
                                 x: .value("Date", date),
                                 y: .value("Minutes", day.minutes)
                             )
-                            .foregroundStyle(.green.opacity(0.6).gradient)
+                            .foregroundStyle(Color.jayTummyTimeFallback.opacity(0.6).gradient)
                             .cornerRadius(3)
                         }
                     }

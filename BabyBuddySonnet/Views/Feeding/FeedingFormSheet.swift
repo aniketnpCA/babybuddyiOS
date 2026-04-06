@@ -46,6 +46,12 @@ struct FeedingFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                FormSheetHeader(
+                    icon: feedingMethod.sfSymbol,
+                    color: JayColors.feedingMethodColor(feedingMethod),
+                    title: isEditing ? theme.editFeedingTitle : theme.logFeedingTitle
+                )
+
                 Section("Type") {
                     Picker("Feeding Type", selection: $feedingType) {
                         ForEach(FeedingType.allCases, id: \.self) { type in

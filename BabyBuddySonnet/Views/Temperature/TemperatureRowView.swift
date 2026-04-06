@@ -4,21 +4,22 @@ struct TemperatureRowView: View {
     let temperature: Temperature
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             Image(systemName: "thermometer.medium")
-                .font(.body)
-                .foregroundStyle(temperatureColor)
-                .frame(width: 28)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 42, height: 42)
+                .background(temperatureColor, in: Circle())
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(DateFormatting.formatTime(temperature.time))
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+
                 HStack(spacing: 6) {
-                    Text(String(format: "%.1f\u{00B0}", temperature.temperature))
-                        .font(.subheadline.weight(.semibold))
+                    Text(String(format: "%.1f\u{00B0}F", temperature.temperature))
+                        .font(.subheadline.weight(.bold))
                         .foregroundStyle(temperatureColor)
-
-                    Text(DateFormatting.formatTime(temperature.time))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
                 }
 
                 if let notes = temperature.notes, !notes.isEmpty {
@@ -35,12 +36,12 @@ struct TemperatureRowView: View {
                 .font(.caption)
                 .foregroundStyle(.tertiary)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
     }
 
     private var temperatureColor: Color {
-        if temperature.temperature >= 100.4 { return .red }
-        if temperature.temperature >= 99.5 { return .orange }
-        return .green
+        if temperature.temperature >= 100.4 { return .jayTemperatureFallback }
+        if temperature.temperature >= 99.5 { return .jayPumpingFallback }
+        return .jayTummyTimeFallback
     }
 }

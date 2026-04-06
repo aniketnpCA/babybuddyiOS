@@ -16,17 +16,17 @@ struct FeedingWeekChart: View {
                         x: .value("Day", day.displayDate),
                         y: .value("Ounces", day.totalOz)
                     )
-                    .foregroundStyle(.blue.gradient)
+                    .foregroundStyle(Color.jayFeedingFallback.gradient)
                     .cornerRadius(4)
                 }
 
                 RuleMark(y: .value("Goal", target))
-                    .foregroundStyle(.red.opacity(0.5))
+                    .foregroundStyle(Color.jayTemperatureFallback.opacity(0.5))
                     .lineStyle(StrokeStyle(lineWidth: 1, dash: [5, 5]))
                     .annotation(position: .top, alignment: .trailing) {
                         Text("Goal")
                             .font(.caption2)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(Color.jayTemperatureFallback)
                     }
             }
             .chartYAxisLabel("oz")

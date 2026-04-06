@@ -65,7 +65,7 @@ struct TemperatureView: View {
             }
             .navigationTitle("Temperature")
             .overlay(alignment: .bottomTrailing) {
-                FloatingActionButton(color: .red) {
+                FloatingActionButton(color: .jayTemperatureFallback) {
                     showForm = true
                 }
             }

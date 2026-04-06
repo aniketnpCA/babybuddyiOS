@@ -60,7 +60,7 @@ struct DiaperIntervalsChart: View {
                             x: .value("Date", interval.date, unit: .day),
                             y: .value("Hours", interval.hours)
                         )
-                        .foregroundStyle(.green.opacity(0.3))
+                        .foregroundStyle(Color.jayTummyTimeFallback.opacity(0.3))
                         .symbolSize(15)
                     }
 
@@ -70,7 +70,7 @@ struct DiaperIntervalsChart: View {
                             x: .value("Date", point.date),
                             y: .value("Hours", point.hours)
                         )
-                        .foregroundStyle(.green)
+                        .foregroundStyle(Color.jayTummyTimeFallback)
                         .lineStyle(StrokeStyle(lineWidth: 2.5))
                     }
                 }

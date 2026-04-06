@@ -67,18 +67,18 @@ struct DiaperLifetimesChart: View {
                             x: .value("Hours", bucket.label),
                             y: .value("Count", bucket.count)
                         )
-                        .foregroundStyle(.green.gradient)
+                        .foregroundStyle(Color.jayTummyTimeFallback.gradient)
                         .cornerRadius(3)
                     }
 
                     // Use a matching bucket label for the RuleMark categorical position
                     RuleMark(x: .value("Median", medianBucketLabel))
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.jayPumpingFallback)
                         .lineStyle(StrokeStyle(lineWidth: 2, dash: [5, 5]))
                         .annotation(position: .top, alignment: .center) {
                             Text("Median: \(String(format: "%.1f", medianHours))h")
                                 .font(.caption2)
-                                .foregroundStyle(.orange)
+                                .foregroundStyle(Color.jayPumpingFallback)
                         }
                 }
                 .chartXAxisLabel("Hours between changes")

@@ -5,23 +5,30 @@ struct FeedingRowView: View {
     private let settings = SettingsService.shared
     private var theme: PetModeTheme { settings.theme }
 
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: feeding.feedingMethod?.sfSymbol ?? "questionmark.circle")
-                .font(.title3)
-                .foregroundStyle(
-                    AppConstants.feedingMethodColors[feeding.feedingMethod ?? .bottle] ?? .gray
-                )
-                .frame(width: 32)
+    private var methodColor: Color {
+        JayColors.feedingMethodColor(feeding.feedingMethod ?? .bottle)
+    }
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
+    var body: some View {
+        HStack(spacing: 14) {
+            // Large filled icon circle
+            Image(systemName: feeding.feedingMethod?.sfSymbol ?? "questionmark.circle")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 42, height: 42)
+                .background(methodColor, in: Circle())
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("\(DateFormatting.formatTime(feeding.start)) \u{2013} \(DateFormatting.formatTime(feeding.end))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
                     Text(theme.feedingMethodNames[feeding.method] ?? feeding.feedingMethod?.displayName ?? feeding.method)
-                        .font(.subheadline.weight(.medium))
+                        .font(.subheadline.weight(.bold))
                     if let amount = feeding.amount {
                         Text("\(String(format: "%.2f", amount)) oz")
                             .font(.subheadline)
-                            .foregroundStyle(.blue)
+                            .foregroundStyle(methodColor)
                     }
                 }
                 Text(theme.feedingTypeNames[feeding.type] ?? feeding.feedingType?.displayName ?? feeding.type)
@@ -31,14 +38,10 @@ struct FeedingRowView: View {
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 2) {
-                Text(DateFormatting.formatTime(feeding.end))
-                    .font(.subheadline)
-                Text(DateFormatting.formatDuration(start: feeding.start, end: feeding.end))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
+            Text(DateFormatting.formatDuration(start: feeding.start, end: feeding.end))
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 }

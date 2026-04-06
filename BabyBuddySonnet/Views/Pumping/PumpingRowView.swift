@@ -5,39 +5,40 @@ struct PumpingRowView: View {
     private let settings = SettingsService.shared
     private var theme: PetModeTheme { settings.theme }
 
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "drop.triangle.fill")
-                .font(.title3)
-                .foregroundStyle(
-                    AppConstants.milkCategoryColors[pumping.milkCategory] ?? .orange
-                )
-                .frame(width: 32)
+    private var categoryColor: Color {
+        JayColors.milkCategoryColor(pumping.milkCategory)
+    }
 
-            VStack(alignment: .leading, spacing: 2) {
-                HStack {
-                    Text(pumping.amount.map { String(format: "%.2f oz", $0) } ?? "— oz")
-                        .font(.subheadline.weight(.medium))
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: "drop.triangle.fill")
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 42, height: 42)
+                .background(Color.jayPumpingFallback, in: Circle())
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("\(DateFormatting.formatTime(pumping.start)) \u{2013} \(DateFormatting.formatTime(pumping.end))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                HStack(spacing: 6) {
+                    Text(pumping.amount.map { String(format: "%.2f oz", $0) } ?? "\u{2014} oz")
+                        .font(.subheadline.weight(.bold))
                     Text(theme.milkCategoryNames[pumping.milkCategory.rawValue] ?? pumping.milkCategory.displayName)
-                        .font(.caption)
+                        .font(.caption2.weight(.medium))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(
-                            (AppConstants.milkCategoryColors[pumping.milkCategory] ?? .orange).opacity(0.15)
-                        )
-                        .clipShape(Capsule())
+                        .foregroundStyle(categoryColor)
+                        .background(categoryColor.opacity(0.12), in: Capsule())
                 }
-                Text("\(DateFormatting.formatTime(pumping.start)) - \(DateFormatting.formatTime(pumping.end))")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
             }
 
             Spacer()
 
             Text(DateFormatting.formatDuration(start: pumping.start, end: pumping.end))
-                .font(.subheadline)
+                .font(.caption.weight(.medium))
                 .foregroundStyle(.secondary)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, 6)
     }
 }

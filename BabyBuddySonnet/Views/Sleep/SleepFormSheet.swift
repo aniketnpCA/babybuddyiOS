@@ -27,6 +27,12 @@ struct SleepFormSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                FormSheetHeader(
+                    icon: isNap ? "sun.max.fill" : "moon.fill",
+                    color: JayColors.sleepColor(isNap: isNap),
+                    title: isEditing ? theme.editSleepTitle : theme.logSleepTitle
+                )
+
                 Section("Type") {
                     Picker("Sleep Type", selection: $isNap) {
                         Text("Nap").tag(true)
