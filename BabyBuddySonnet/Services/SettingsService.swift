@@ -32,6 +32,67 @@ final class SettingsService {
     // Child sex cache — for WHO growth chart percentile selection
     private var _childSex: String = ""
 
+    // MARK: - Display Timezone
+
+    /// When true, times in the app are shown in the device's current local timezone.
+    /// When false, times are shown in the home (server) timezone configured below.
+    var useLocalTimezone: Bool {
+        get {
+            // Default to true (show device-local time)
+            let key = Keys.useLocalTimezone
+            if store.object(forKey: key) == nil { return true }
+            return store.bool(forKey: key)
+        }
+        set { store.set(newValue, forKey: Keys.useLocalTimezone); store.synchronize() }
+    }
+
+    // MARK: - Default Start Time Offsets
+
+    /// Feeding default start offset in seconds (before now)
+    var feedingStartOffset: Int {
+        get {
+            let val = Int(store.longLong(forKey: Keys.feedingStartOffset))
+            return val > 0 ? val : AppConstants.defaultFeedingStartOffset
+        }
+        set { store.set(Int64(newValue), forKey: Keys.feedingStartOffset); store.synchronize() }
+    }
+
+    /// Pumping default start offset in seconds (before now)
+    var pumpingStartOffset: Int {
+        get {
+            let val = Int(store.longLong(forKey: Keys.pumpingStartOffset))
+            return val > 0 ? val : AppConstants.defaultPumpingStartOffset
+        }
+        set { store.set(Int64(newValue), forKey: Keys.pumpingStartOffset); store.synchronize() }
+    }
+
+    /// Sleep default start offset in seconds (before now)
+    var sleepStartOffset: Int {
+        get {
+            let val = Int(store.longLong(forKey: Keys.sleepStartOffset))
+            return val > 0 ? val : AppConstants.defaultSleepStartOffset
+        }
+        set { store.set(Int64(newValue), forKey: Keys.sleepStartOffset); store.synchronize() }
+    }
+
+    /// Tummy Time default start offset in seconds (before now)
+    var tummyTimeStartOffset: Int {
+        get {
+            let val = Int(store.longLong(forKey: Keys.tummyTimeStartOffset))
+            return val > 0 ? val : AppConstants.defaultTummyTimeStartOffset
+        }
+        set { store.set(Int64(newValue), forKey: Keys.tummyTimeStartOffset); store.synchronize() }
+    }
+
+    /// Timer fallback offset in seconds (StopTimerSheet when start is unknown)
+    var timerFallbackOffset: Int {
+        get {
+            let val = Int(store.longLong(forKey: Keys.timerFallbackOffset))
+            return val > 0 ? val : AppConstants.defaultTimerFallbackOffset
+        }
+        set { store.set(Int64(newValue), forKey: Keys.timerFallbackOffset); store.synchronize() }
+    }
+
     // MARK: - Feeding Settings
 
     var feedingTargetAmount: Double {
@@ -277,6 +338,12 @@ final class SettingsService {
     // MARK: - Actions
 
     func resetToDefaults() {
+        useLocalTimezone = true
+        feedingStartOffset = AppConstants.defaultFeedingStartOffset
+        pumpingStartOffset = AppConstants.defaultPumpingStartOffset
+        sleepStartOffset = AppConstants.defaultSleepStartOffset
+        tummyTimeStartOffset = AppConstants.defaultTummyTimeStartOffset
+        timerFallbackOffset = AppConstants.defaultTimerFallbackOffset
         feedingTargetAmount = AppConstants.defaultFeedingTarget
         feedingTargetTime = AppConstants.defaultFeedingTargetTime
         feedingWakeTime = AppConstants.defaultFeedingWakeTime
@@ -339,6 +406,12 @@ final class SettingsService {
         static let sleepTargetHours = "sleepTargetHours"
         static let frozenExpirationDays = "frozenExpirationDays"
         static let timezone = "timezone"
+        static let useLocalTimezone = "useLocalTimezone"
+        static let feedingStartOffset = "feedingStartOffset"
+        static let pumpingStartOffset = "pumpingStartOffset"
+        static let sleepStartOffset = "sleepStartOffset"
+        static let tummyTimeStartOffset = "tummyTimeStartOffset"
+        static let timerFallbackOffset = "timerFallbackOffset"
         static let serverURL = "serverURL"
         static let aiApiKey = "aiApiKey"
         static let aiBaseURL = "aiBaseURL"

@@ -30,6 +30,11 @@ struct DashboardView: View {
                             }
                         }
 
+                        if !OfflineQueueService.shared.isOnline || OfflineQueueService.shared.hasPendingOperations {
+                            OfflineStatusBanner()
+                                .padding(.horizontal)
+                        }
+
                         ChildProfileCard(
                             child: child,
                             latestWeight: viewModel.latestWeight,
@@ -156,15 +161,6 @@ struct DashboardView: View {
                 ExpandableFloatingActionButton(items: fabItems)
             }
             .navigationTitle("Dashboard")
-            .toolbar {
-                ToolbarItem(placement: .primaryAction) {
-                    NavigationLink {
-                        SettingsView()
-                    } label: {
-                        Image(systemName: "gearshape")
-                    }
-                }
-            }
             .refreshable {
                 await reloadDashboard()
             }

@@ -20,11 +20,11 @@ struct TummyTimeFormSheet: View {
         self.onSave = onSave
 
         if let tt = editing {
-            _startTime = State(initialValue: DateFormatting.parseISO(tt.start) ?? Date.now.addingTimeInterval(-600))
+            _startTime = State(initialValue: DateFormatting.parseISO(tt.start) ?? Date.now.addingTimeInterval(-Double(SettingsService.shared.tummyTimeStartOffset)))
             _endTime = State(initialValue: DateFormatting.parseISO(tt.end) ?? Date.now)
             _milestone = State(initialValue: tt.milestone ?? "")
         } else {
-            _startTime = State(initialValue: initialStartTime ?? Date.now.addingTimeInterval(-600))
+            _startTime = State(initialValue: initialStartTime ?? Date.now.addingTimeInterval(-Double(SettingsService.shared.tummyTimeStartOffset)))
             _endTime = State(initialValue: initialEndTime ?? Date.now)
             _milestone = State(initialValue: "")
         }
@@ -96,7 +96,10 @@ struct TummyTimeFormSheet: View {
         defer { isDeleting = false }
 
         do {
-            try await APIClient.shared.delete(path: APIEndpoints.tummyTime(tt.id))
+            let _ = try await OfflineQueueService.shared.tryDelete(
+                entityType: .tummyTime,
+                path: APIEndpoints.tummyTime(tt.id)
+            )
             await onSave()
             dismiss()
         } catch {
@@ -118,7 +121,8 @@ struct TummyTimeFormSheet: View {
                     end: DateFormatting.formatForAPI(endTime),
                     milestone: milestone.isEmpty ? nil : milestone
                 )
-                let _: TummyTime = try await APIClient.shared.patch(
+                let _ = try await OfflineQueueService.shared.tryPatch(
+                    entityType: .tummyTime,
                     path: APIEndpoints.tummyTime(tt.id),
                     body: input
                 )
@@ -129,7 +133,8 @@ struct TummyTimeFormSheet: View {
                     end: DateFormatting.formatForAPI(endTime),
                     milestone: milestone.isEmpty ? nil : milestone
                 )
-                let _: TummyTime = try await APIClient.shared.post(
+                let _ = try await OfflineQueueService.shared.tryPost(
+                    entityType: .tummyTime,
                     path: APIEndpoints.tummyTimes,
                     body: input
                 )

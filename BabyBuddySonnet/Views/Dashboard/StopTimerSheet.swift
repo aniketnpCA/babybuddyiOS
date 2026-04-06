@@ -123,7 +123,7 @@ struct StopTimerSheet: View {
         isStopping = true
         defer { isStopping = false }
 
-        let startDate = DateFormatting.parseISO(timer.start) ?? Date().addingTimeInterval(-3600)
+        let startDate = DateFormatting.parseISO(timer.start) ?? Date().addingTimeInterval(-Double(SettingsService.shared.timerFallbackOffset))
         let endDate = Date()
 
         _ = await onStop()

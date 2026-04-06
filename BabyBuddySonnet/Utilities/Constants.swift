@@ -9,6 +9,13 @@ nonisolated enum AppConstants {
     static let defaultFrozenExpirationDays: Int = 180
     static let defaultTimezone: String = "America/Los_Angeles"
 
+    // Default Start Time Offsets (seconds before now)
+    static let defaultFeedingStartOffset: Int = 900        // 15 minutes
+    static let defaultPumpingStartOffset: Int = 120        // 2 minutes
+    static let defaultSleepStartOffset: Int = 3600         // 60 minutes
+    static let defaultTummyTimeStartOffset: Int = 600      // 10 minutes
+    static let defaultTimerFallbackOffset: Int = 3600      // 60 minutes (StopTimerSheet fallback)
+
     // AI Defaults
     static let defaultAIBaseURL: String = "https://api.openai.com"
     static let defaultAIModel: String = "gpt-4o-mini"

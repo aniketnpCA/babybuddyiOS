@@ -16,7 +16,7 @@ struct SleepFormSheet: View {
         self.childID = childID
         self.editing = editing
         self.onSave = onSave
-        _startTime = State(initialValue: initialStartTime ?? Date().addingTimeInterval(-3600))
+        _startTime = State(initialValue: initialStartTime ?? Date().addingTimeInterval(-Double(SettingsService.shared.sleepStartOffset)))
         _endTime = State(initialValue: initialEndTime ?? Date())
     }
 
@@ -91,7 +91,8 @@ struct SleepFormSheet: View {
                     nap: isNap,
                     notes: nil
                 )
-                let _: SleepRecord = try await APIClient.shared.patch(
+                let _ = try await OfflineQueueService.shared.tryPatch(
+                    entityType: .sleep,
                     path: APIEndpoints.sleepSession(sleep.id),
                     body: input
                 )
@@ -103,7 +104,8 @@ struct SleepFormSheet: View {
                     nap: isNap,
                     notes: nil
                 )
-                let _: SleepRecord = try await APIClient.shared.post(
+                let _ = try await OfflineQueueService.shared.tryPost(
+                    entityType: .sleep,
                     path: APIEndpoints.sleep,
                     body: input
                 )

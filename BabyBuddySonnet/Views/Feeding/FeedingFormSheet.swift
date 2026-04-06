@@ -26,14 +26,14 @@ struct FeedingFormSheet: View {
             _feedingType = State(initialValue: feeding.feedingType ?? .breastMilk)
             _feedingMethod = State(initialValue: feeding.feedingMethod ?? .bottle)
             _amount = State(initialValue: feeding.amount ?? 3.0)
-            _startTime = State(initialValue: DateFormatting.parseISO(feeding.start) ?? Date.now.addingTimeInterval(-900))
+            _startTime = State(initialValue: DateFormatting.parseISO(feeding.start) ?? Date.now.addingTimeInterval(-Double(SettingsService.shared.feedingStartOffset)))
             _endTime = State(initialValue: DateFormatting.parseISO(feeding.end) ?? Date.now)
             _notes = State(initialValue: feeding.notes ?? "")
         } else {
             _feedingType = State(initialValue: .breastMilk)
             _feedingMethod = State(initialValue: .bottle)
             _amount = State(initialValue: 3.0)
-            _startTime = State(initialValue: initialStartTime ?? Date.now.addingTimeInterval(-900))
+            _startTime = State(initialValue: initialStartTime ?? Date.now.addingTimeInterval(-Double(SettingsService.shared.feedingStartOffset)))
             _endTime = State(initialValue: initialEndTime ?? Date.now)
             _notes = State(initialValue: "")
         }
@@ -131,7 +131,11 @@ struct FeedingFormSheet: View {
         defer { isDeleting = false }
 
         do {
-            try await APIClient.shared.delete(path: APIEndpoints.feeding(feeding.id))
+            let synced = try await OfflineQueueService.shared.tryDelete(
+                entityType: .feeding,
+                path: APIEndpoints.feeding(feeding.id)
+            )
+            if !synced { /* queued for later */ }
             await onSave()
             dismiss()
         } catch {
@@ -157,7 +161,8 @@ struct FeedingFormSheet: View {
                     amount: feedingMethod == .bottle ? amount : nil,
                     notes: notes.isEmpty ? nil : notes
                 )
-                let _: Feeding = try await APIClient.shared.patch(
+                let _ = try await OfflineQueueService.shared.tryPatch(
+                    entityType: .feeding,
                     path: APIEndpoints.feeding(feeding.id),
                     body: input
                 )
@@ -171,7 +176,8 @@ struct FeedingFormSheet: View {
                     amount: feedingMethod == .bottle ? amount : nil,
                     notes: notes.isEmpty ? nil : notes
                 )
-                let _: Feeding = try await APIClient.shared.post(
+                let _ = try await OfflineQueueService.shared.tryPost(
+                    entityType: .feeding,
                     path: APIEndpoints.feedings,
                     body: input
                 )

@@ -92,7 +92,10 @@ struct NoteFormSheet: View {
         defer { isDeleting = false }
 
         do {
-            try await APIClient.shared.delete(path: APIEndpoints.note(note.id))
+            let _ = try await OfflineQueueService.shared.tryDelete(
+                entityType: .note,
+                path: APIEndpoints.note(note.id)
+            )
             await onSave()
             dismiss()
         } catch {
@@ -113,7 +116,8 @@ struct NoteFormSheet: View {
                     note: noteText.trimmingCharacters(in: .whitespacesAndNewlines),
                     time: DateFormatting.formatForAPI(time)
                 )
-                let _: Note = try await APIClient.shared.patch(
+                let _ = try await OfflineQueueService.shared.tryPatch(
+                    entityType: .note,
                     path: APIEndpoints.note(note.id),
                     body: input
                 )
@@ -123,7 +127,8 @@ struct NoteFormSheet: View {
                     note: noteText.trimmingCharacters(in: .whitespacesAndNewlines),
                     time: DateFormatting.formatForAPI(time)
                 )
-                let _: Note = try await APIClient.shared.post(
+                let _ = try await OfflineQueueService.shared.tryPost(
+                    entityType: .note,
                     path: APIEndpoints.notes,
                     body: input
                 )

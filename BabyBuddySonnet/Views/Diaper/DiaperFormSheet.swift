@@ -132,7 +132,10 @@ struct DiaperFormSheet: View {
         defer { isDeleting = false }
 
         do {
-            try await APIClient.shared.delete(path: APIEndpoints.change(change.id))
+            let _ = try await OfflineQueueService.shared.tryDelete(
+                entityType: .diaper,
+                path: APIEndpoints.change(change.id)
+            )
             await onSave()
             dismiss()
         } catch {
@@ -157,7 +160,8 @@ struct DiaperFormSheet: View {
                     amount: Double(amount),
                     notes: nil
                 )
-                let _: DiaperChange = try await APIClient.shared.patch(
+                let _ = try await OfflineQueueService.shared.tryPatch(
+                    entityType: .diaper,
                     path: APIEndpoints.change(change.id),
                     body: input
                 )
@@ -171,7 +175,8 @@ struct DiaperFormSheet: View {
                     amount: Double(amount),
                     notes: nil
                 )
-                let _: DiaperChange = try await APIClient.shared.post(
+                let _ = try await OfflineQueueService.shared.tryPost(
+                    entityType: .diaper,
                     path: APIEndpoints.changes,
                     body: input
                 )

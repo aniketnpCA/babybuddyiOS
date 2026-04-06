@@ -86,6 +86,18 @@ actor APIClient {
         return try await execute(request)
     }
 
+    /// POST with pre-encoded body data (used by offline queue)
+    func postRaw<T: Decodable>(path: String, body: Data) async throws -> T {
+        let request = try buildRequest(path: path, method: "POST", body: body)
+        return try await execute(request)
+    }
+
+    /// PATCH with pre-encoded body data (used by offline queue)
+    func patchRaw<T: Decodable>(path: String, body: Data) async throws -> T {
+        let request = try buildRequest(path: path, method: "PATCH", body: body)
+        return try await execute(request)
+    }
+
     func delete(path: String) async throws {
         let request = try buildRequest(path: path, method: "DELETE")
         let (_, response) = try await session.data(for: request)

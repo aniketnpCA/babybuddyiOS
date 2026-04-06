@@ -113,6 +113,41 @@ final class DashboardViewModel {
         }
     }
 
+    /// Reconcile local timer state with the server.
+    /// Handles: timers stopped externally (Home Assistant, web UI, other apps),
+    /// timers deleted on server, and stale timers that are no longer active.
+    func reconcileTimers(childID: Int) async {
+        do {
+            let response: PaginatedResponse<BabyTimer> = try await APIClient.shared.get(
+                path: APIEndpoints.timers,
+                queryItems: [
+                    URLQueryItem(name: "child", value: "\(childID)"),
+                    URLQueryItem(name: "active", value: "true"),
+                    URLQueryItem(name: "limit", value: "50"),
+                ]
+            )
+            let serverActiveIDs = Set(response.results.map(\.id))
+            let localActiveIDs = Set(activeTimers.map(\.id))
+
+            // Remove local timers that are no longer active on server
+            // (stopped via Home Assistant, web UI, another app, etc.)
+            let orphaned = localActiveIDs.subtracting(serverActiveIDs)
+            if !orphaned.isEmpty {
+                activeTimers.removeAll { orphaned.contains($0.id) }
+            }
+
+            // Add server timers we don't know about locally
+            // (started via another client)
+            let missing = serverActiveIDs.subtracting(localActiveIDs)
+            if !missing.isEmpty {
+                let newTimers = response.results.filter { missing.contains($0.id) }
+                activeTimers.append(contentsOf: newTimers)
+            }
+        } catch {
+            // Timer reconciliation is supplementary; don't surface errors
+        }
+    }
+
     // MARK: - Cumulative Chart Data
 
     var cumulativeChartData: FeedingViewModel.CumulativeChartData {
@@ -590,6 +625,14 @@ final class DashboardViewModel {
                     dailyConsumedOz: todayConsumedOz,
                     dailyTargetOz: settings.feedingTargetAmount
                 )
+            }
+
+            // Reconcile timers with server (detect orphaned/external changes)
+            await reconcileTimers(childID: childID)
+
+            // Process any pending offline operations
+            if OfflineQueueService.shared.hasPendingOperations {
+                await OfflineQueueService.shared.processQueue()
             }
 
             // Load extra widget data if any widgets are enabled

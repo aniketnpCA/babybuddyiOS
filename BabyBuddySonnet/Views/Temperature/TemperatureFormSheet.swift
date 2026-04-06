@@ -105,7 +105,10 @@ struct TemperatureFormSheet: View {
         defer { isDeleting = false }
 
         do {
-            try await APIClient.shared.delete(path: APIEndpoints.temperature(temp.id))
+            let _ = try await OfflineQueueService.shared.tryDelete(
+                entityType: .temperature,
+                path: APIEndpoints.temperature(temp.id)
+            )
             await onSave()
             dismiss()
         } catch {
@@ -133,7 +136,8 @@ struct TemperatureFormSheet: View {
                     time: DateFormatting.formatForAPI(time),
                     notes: notes.isEmpty ? nil : notes
                 )
-                let _: Temperature = try await APIClient.shared.patch(
+                let _ = try await OfflineQueueService.shared.tryPatch(
+                    entityType: .temperature,
                     path: APIEndpoints.temperature(temp.id),
                     body: input
                 )
@@ -144,7 +148,8 @@ struct TemperatureFormSheet: View {
                     time: DateFormatting.formatForAPI(time),
                     notes: notes.isEmpty ? nil : notes
                 )
-                let _: Temperature = try await APIClient.shared.post(
+                let _ = try await OfflineQueueService.shared.tryPost(
+                    entityType: .temperature,
                     path: APIEndpoints.temperatures,
                     body: input
                 )

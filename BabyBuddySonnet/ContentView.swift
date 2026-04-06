@@ -9,6 +9,7 @@ nonisolated enum AppTab: String, CaseIterable, Identifiable, Sendable {
     case diaper
     case pumping
     case analytics
+    case settings
 
     nonisolated var id: String { rawValue }
 
@@ -20,6 +21,7 @@ nonisolated enum AppTab: String, CaseIterable, Identifiable, Sendable {
         case .diaper: "Diaper"
         case .pumping: "Pumping"
         case .analytics: "Analytics"
+        case .settings: "Settings"
         }
     }
 
@@ -31,10 +33,11 @@ nonisolated enum AppTab: String, CaseIterable, Identifiable, Sendable {
         case .diaper: "circle.dotted"
         case .pumping: "drop.triangle.fill"
         case .analytics: "chart.line.uptrend.xyaxis"
+        case .settings: "gearshape.fill"
         }
     }
 
-    static let defaultOrder: [AppTab] = [.dashboard, .feeding, .sleep, .diaper, .pumping, .analytics]
+    static let defaultOrder: [AppTab] = [.dashboard, .feeding, .sleep, .diaper, .pumping, .analytics, .settings]
 
     /// Resolve a persisted array of raw values back to AppTab, falling back to defaults.
     static func resolveOrder(from rawValues: [String]) -> [AppTab] {
@@ -103,6 +106,10 @@ struct MainTabView: View {
             PumpingView(childID: child.id)
         case .analytics:
             AnalyticsView(child: child)
+        case .settings:
+            NavigationStack {
+                SettingsView()
+            }
         }
     }
 }

@@ -13,21 +13,11 @@ nonisolated enum DateFormatting {
         return f
     }()
 
-    private static let timeFormatter: DateFormatter = {
+    // Fallback for microsecond precision (6 decimal places) that ISO8601DateFormatter can't handle
+    private static let microsecondsFormatter: DateFormatter = {
         let f = DateFormatter()
-        f.dateFormat = "h:mm a"
-        return f
-    }()
-
-    private static let dateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "EEE, MMM d"
-        return f
-    }()
-
-    private static let shortDateFormatter: DateFormatter = {
-        let f = DateFormatter()
-        f.dateFormat = "MMM d"
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX"
+        f.locale = Locale(identifier: "en_US_POSIX")
         return f
     }()
 
@@ -38,13 +28,52 @@ nonisolated enum DateFormatting {
         return f
     }()
 
-    // Fallback for microsecond precision (6 decimal places) that ISO8601DateFormatter can't handle
-    private static let microsecondsFormatter: DateFormatter = {
+    // MARK: - Display Timezone
+
+    /// Returns the timezone to use for display formatting.
+    /// When "Use Local Timezone" is enabled, returns the device's current timezone.
+    /// Otherwise, returns the configured home (server) timezone.
+    @MainActor
+    static var displayTimeZone: TimeZone {
+        let settings = SettingsService.shared
+        if settings.useLocalTimezone {
+            return TimeZone.current
+        }
+        return TimeZone(identifier: settings.timezone) ?? TimeZone.current
+    }
+
+    /// Returns the configured home (server) timezone, for reference display.
+    @MainActor
+    static var homeTimeZone: TimeZone {
+        let settings = SettingsService.shared
+        return TimeZone(identifier: settings.timezone) ?? TimeZone.current
+    }
+
+    // MARK: - Display Formatters (timezone-aware, created on-demand)
+
+    @MainActor
+    private static func makeTimeFormatter() -> DateFormatter {
         let f = DateFormatter()
-        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXXXX"
-        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "h:mm a"
+        f.timeZone = displayTimeZone
         return f
-    }()
+    }
+
+    @MainActor
+    private static func makeDateFormatter() -> DateFormatter {
+        let f = DateFormatter()
+        f.dateFormat = "EEE, MMM d"
+        f.timeZone = displayTimeZone
+        return f
+    }
+
+    @MainActor
+    private static func makeShortDateFormatter() -> DateFormatter {
+        let f = DateFormatter()
+        f.dateFormat = "MMM d"
+        f.timeZone = displayTimeZone
+        return f
+    }
 
     // MARK: - Parsing
 
@@ -70,23 +99,37 @@ nonisolated enum DateFormatting {
 
     // MARK: - Display Formatting
 
+    @MainActor
     static func formatTime(_ isoString: String) -> String {
         guard let date = parseISO(isoString) else { return "" }
-        return timeFormatter.string(from: date)
+        return makeTimeFormatter().string(from: date)
     }
 
+    @MainActor
     static func formatTimeFromDate(_ date: Date) -> String {
-        timeFormatter.string(from: date)
+        makeTimeFormatter().string(from: date)
     }
 
+    @MainActor
     static func formatDate(_ isoString: String) -> String {
         guard let date = parseISO(isoString) else { return "" }
-        return dateFormatter.string(from: date)
+        return makeDateFormatter().string(from: date)
     }
 
+    @MainActor
     static func formatShortDate(_ isoString: String) -> String {
         guard let date = parseISO(isoString) else { return "" }
-        return shortDateFormatter.string(from: date)
+        return makeShortDateFormatter().string(from: date)
+    }
+
+    /// Format time in the home timezone for reference (e.g. "3:00 PM PT")
+    @MainActor
+    static func formatTimeInHomeTimezone(_ isoString: String) -> String {
+        guard let date = parseISO(isoString) else { return "" }
+        let f = DateFormatter()
+        f.dateFormat = "h:mm a zzz"
+        f.timeZone = homeTimeZone
+        return f.string(from: date)
     }
 
     static func formatDuration(start: String, end: String) -> String {
@@ -111,6 +154,7 @@ nonisolated enum DateFormatting {
     }
 
     // MARK: - Date Range Helpers
+    // These use device-local calendar for day grouping (per user request)
 
     static func startOfToday() -> Date {
         Calendar.current.startOfDay(for: Date())

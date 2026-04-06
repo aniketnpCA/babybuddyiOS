@@ -102,6 +102,7 @@ nonisolated struct PetModeTheme: Sendable {
         case .diaper:    return diaperTabName
         case .pumping:   return pumpingTabName
         case .analytics: return "Analytics"
+        case .settings:  return "Settings"
         }
     }
 
@@ -113,6 +114,7 @@ nonisolated struct PetModeTheme: Sendable {
         case .diaper:    return diaperTabIcon
         case .pumping:   return pumpingTabIcon
         case .analytics: return "chart.line.uptrend.xyaxis"
+        case .settings:  return "gearshape.fill"
         }
     }
 

@@ -23,12 +23,12 @@ struct PumpingFormSheet: View {
         if let pumping = editing {
             _amount = State(initialValue: pumping.amount ?? 0.0)
             _category = State(initialValue: pumping.milkCategory)
-            _startTime = State(initialValue: DateFormatting.parseISO(pumping.start) ?? Date.now.addingTimeInterval(-1800))
+            _startTime = State(initialValue: DateFormatting.parseISO(pumping.start) ?? Date.now.addingTimeInterval(-Double(SettingsService.shared.pumpingStartOffset)))
             _endTime = State(initialValue: DateFormatting.parseISO(pumping.end) ?? Date.now)
         } else {
             _amount = State(initialValue: 0.0)
             _category = State(initialValue: .toBeConsumed)
-            _startTime = State(initialValue: initialStartTime ?? Date.now.addingTimeInterval(-1800))
+            _startTime = State(initialValue: initialStartTime ?? Date.now.addingTimeInterval(-Double(SettingsService.shared.pumpingStartOffset)))
             _endTime = State(initialValue: initialEndTime ?? Date.now)
         }
     }
@@ -110,7 +110,10 @@ struct PumpingFormSheet: View {
         defer { isDeleting = false }
 
         do {
-            try await APIClient.shared.delete(path: APIEndpoints.pumpingSession(pumping.id))
+            let _ = try await OfflineQueueService.shared.tryDelete(
+                entityType: .pumping,
+                path: APIEndpoints.pumpingSession(pumping.id)
+            )
             await onSave()
             dismiss()
         } catch {
@@ -134,7 +137,8 @@ struct PumpingFormSheet: View {
                     amount: amount,
                     notes: MilkCategory.createNotes(for: category)
                 )
-                let _: Pumping = try await APIClient.shared.patch(
+                let _ = try await OfflineQueueService.shared.tryPatch(
+                    entityType: .pumping,
                     path: APIEndpoints.pumpingSession(pumping.id),
                     body: input
                 )
@@ -146,7 +150,8 @@ struct PumpingFormSheet: View {
                     amount: amount,
                     notes: MilkCategory.createNotes(for: category)
                 )
-                let _: Pumping = try await APIClient.shared.post(
+                let _ = try await OfflineQueueService.shared.tryPost(
+                    entityType: .pumping,
                     path: APIEndpoints.pumping,
                     body: input
                 )

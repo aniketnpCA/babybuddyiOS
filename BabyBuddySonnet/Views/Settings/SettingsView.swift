@@ -22,39 +22,99 @@ struct SettingsView: View {
         return String(format: "%02d:%02d", c.hour ?? 0, c.minute ?? 0)
     }
 
+    private func formatOffset(_ seconds: Int) -> String {
+        if seconds < 60 { return "\(seconds) sec" }
+        let minutes = seconds / 60
+        if seconds % 60 == 0 { return "\(minutes) min" }
+        return "\(minutes)m \(seconds % 60)s"
+    }
+
     var body: some View {
         Form {
-            Section("Appearance") {
+            // MARK: - Time & Display
+            Section {
+                Picker("Home Timezone", selection: Binding(
+                    get: { viewModel.settings.timezone },
+                    set: { viewModel.settings.timezone = $0 }
+                )) {
+                    ForEach(AppConstants.timezones, id: \.value) { tz in
+                        Text(tz.label).tag(tz.value)
+                    }
+                }
+
                 Toggle(isOn: Binding(
-                    get: { viewModel.settings.isDogMode },
-                    set: { viewModel.settings.isDogMode = $0 }
+                    get: { viewModel.settings.useLocalTimezone },
+                    set: { viewModel.settings.useLocalTimezone = $0 }
                 )) {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Dog Mode")
-                        Text("Woof! Track your pup's routine")
+                        Text("Show Local Time")
+                        Text("Display times in your current device timezone instead of the home timezone")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                 }
-            }
-
-            AppIconSection()
-
-            Section {
-                Picker("Child's Sex", selection: Binding(
-                    get: { viewModel.settings.childSex },
-                    set: { viewModel.settings.childSex = $0 }
-                )) {
-                    Text("Not Set").tag("")
-                    Text("Boy").tag("M")
-                    Text("Girl").tag("F")
-                }
             } header: {
-                Text("Growth Charts")
+                Text("Time & Display")
             } footer: {
-                Text("Used to select WHO growth percentiles (boys vs girls).")
+                if viewModel.settings.useLocalTimezone && TimeZone.current.identifier != viewModel.settings.timezone {
+                    Text("Times will display in \(TimeZone.current.localizedName(for: .shortGeneric, locale: .current) ?? TimeZone.current.abbreviation() ?? "local time"). Home timezone: \(TimeZone(identifier: viewModel.settings.timezone)?.localizedName(for: .shortGeneric, locale: .current) ?? viewModel.settings.timezone).")
+                }
             }
 
+            // MARK: - Default Start Times
+            Section {
+                OffsetRow(
+                    label: "Feeding",
+                    icon: "drop.fill",
+                    color: .blue,
+                    seconds: Binding(
+                        get: { viewModel.settings.feedingStartOffset },
+                        set: { viewModel.settings.feedingStartOffset = $0 }
+                    )
+                )
+                OffsetRow(
+                    label: "Pumping",
+                    icon: "drop.triangle.fill",
+                    color: .orange,
+                    seconds: Binding(
+                        get: { viewModel.settings.pumpingStartOffset },
+                        set: { viewModel.settings.pumpingStartOffset = $0 }
+                    )
+                )
+                OffsetRow(
+                    label: "Sleep",
+                    icon: "moon.fill",
+                    color: .purple,
+                    seconds: Binding(
+                        get: { viewModel.settings.sleepStartOffset },
+                        set: { viewModel.settings.sleepStartOffset = $0 }
+                    )
+                )
+                OffsetRow(
+                    label: "Tummy Time",
+                    icon: "figure.play",
+                    color: .green,
+                    seconds: Binding(
+                        get: { viewModel.settings.tummyTimeStartOffset },
+                        set: { viewModel.settings.tummyTimeStartOffset = $0 }
+                    )
+                )
+                OffsetRow(
+                    label: "Timer Fallback",
+                    icon: "timer",
+                    color: .secondary,
+                    seconds: Binding(
+                        get: { viewModel.settings.timerFallbackOffset },
+                        set: { viewModel.settings.timerFallbackOffset = $0 }
+                    )
+                )
+            } header: {
+                Text("Default Start Times")
+            } footer: {
+                Text("When logging a new activity, the start time defaults to this many minutes before the current time.")
+            }
+
+            // MARK: - Daily Goals
             Section("Daily Feeding Goal") {
                 HStack {
                     Text("Target Amount")
@@ -126,21 +186,47 @@ struct SettingsView: View {
                 }
             }
 
+            // MARK: - Notifications
             ReminderSettingsSection()
 
             IntervalSettingsSection()
 
-            Section("Timezone") {
-                Picker("Timezone", selection: Binding(
-                    get: { viewModel.settings.timezone },
-                    set: { viewModel.settings.timezone = $0 }
+            // MARK: - Appearance
+            Section("Appearance") {
+                Toggle(isOn: Binding(
+                    get: { viewModel.settings.isDogMode },
+                    set: { viewModel.settings.isDogMode = $0 }
                 )) {
-                    ForEach(AppConstants.timezones, id: \.value) { tz in
-                        Text(tz.label).tag(tz.value)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Dog Mode")
+                        Text("Woof! Track your pup's routine")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
 
+            AppIconSection()
+
+            Section {
+                Picker("Child's Sex", selection: Binding(
+                    get: { viewModel.settings.childSex },
+                    set: { viewModel.settings.childSex = $0 }
+                )) {
+                    Text("Not Set").tag("")
+                    Text("Boy").tag("M")
+                    Text("Girl").tag("F")
+                }
+            } header: {
+                Text("Growth Charts")
+            } footer: {
+                Text("Used to select WHO growth percentiles (boys vs girls).")
+            }
+
+            // MARK: - Offline Queue
+            OfflineQueueSection()
+
+            // MARK: - API & Server
             Section("API Configuration") {
                 HStack {
                     Text("Server")
@@ -183,10 +269,13 @@ struct SettingsView: View {
 
             AISettingsSection()
 
+            // MARK: - Customization
             TabOrderSection()
 
+            // MARK: - About
             AboutSection()
 
+            // MARK: - Danger Zone
             Section("Danger Zone") {
                 Button("Reset All Settings") {
                     showResetConfirmation = true
@@ -216,6 +305,138 @@ struct SettingsView: View {
             }
         } message: {
             Text("You will need to re-enter your server URL and API token.")
+        }
+    }
+}
+
+// MARK: - Offset Row (for Default Start Times)
+
+struct OffsetRow: View {
+    let label: String
+    let icon: String
+    let color: Color
+    @Binding var seconds: Int
+
+    private var minutes: Int { seconds / 60 }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Label(label, systemImage: icon)
+                    .foregroundStyle(color)
+                Spacer()
+                Text("\(minutes) min before now")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            Stepper(
+                value: Binding(
+                    get: { minutes },
+                    set: { seconds = $0 * 60 }
+                ),
+                in: 0...120,
+                step: 1
+            ) {
+                Text("Adjust")
+            }
+        }
+    }
+}
+
+// MARK: - Offline Queue Section
+
+struct OfflineQueueSection: View {
+    private let offlineQueue = OfflineQueueService.shared
+
+    var body: some View {
+        Section {
+            HStack {
+                Label("Connection", systemImage: offlineQueue.isOnline ? "wifi" : "wifi.slash")
+                    .foregroundStyle(offlineQueue.isOnline ? .green : .red)
+                Spacer()
+                Text(offlineQueue.isOnline ? "Online" : "Offline")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
+            if offlineQueue.hasPendingOperations {
+                HStack {
+                    Label("Pending", systemImage: "arrow.triangle.2.circlepath")
+                    Spacer()
+                    Text("\(offlineQueue.pendingCount) item\(offlineQueue.pendingCount == 1 ? "" : "s")")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                if offlineQueue.failedCount > 0 {
+                    HStack {
+                        Label("Failed", systemImage: "exclamationmark.triangle.fill")
+                            .foregroundStyle(.orange)
+                        Spacer()
+                        Text("\(offlineQueue.failedCount) item\(offlineQueue.failedCount == 1 ? "" : "s")")
+                            .font(.subheadline)
+                            .foregroundStyle(.orange)
+                    }
+
+                    Button("Retry Failed") {
+                        Task {
+                            await offlineQueue.retryFailed()
+                        }
+                    }
+                }
+
+                ForEach(offlineQueue.queue) { op in
+                    HStack {
+                        Image(systemName: statusIcon(for: op.status))
+                            .foregroundStyle(statusColor(for: op.status))
+                            .font(.caption)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("\(op.operationType.rawValue.capitalized) \(op.entityType.rawValue)")
+                                .font(.caption)
+                            if let error = op.lastError {
+                                Text(error)
+                                    .font(.caption2)
+                                    .foregroundStyle(.red)
+                                    .lineLimit(1)
+                            }
+                        }
+                        Spacer()
+                        if op.status == .failed {
+                            Button {
+                                offlineQueue.removeOperation(id: op.id)
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+            }
+        } header: {
+            Text("Sync Status")
+        } footer: {
+            if !offlineQueue.hasPendingOperations {
+                Text("All changes are synced with the server.")
+            } else {
+                Text("Pending changes will sync automatically when connected.")
+            }
+        }
+    }
+
+    private func statusIcon(for status: QueuedOperationStatus) -> String {
+        switch status {
+        case .pending: return "clock"
+        case .syncing: return "arrow.triangle.2.circlepath"
+        case .failed: return "exclamationmark.circle.fill"
+        }
+    }
+
+    private func statusColor(for status: QueuedOperationStatus) -> Color {
+        switch status {
+        case .pending: return .secondary
+        case .syncing: return .blue
+        case .failed: return .red
         }
     }
 }
@@ -375,4 +596,3 @@ struct AboutSection: View {
         }
     }
 }
-
